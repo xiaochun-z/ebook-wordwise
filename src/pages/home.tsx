@@ -2,6 +2,7 @@ import { Fragment } from "react";
 import { useEffect } from "react";
 import { invoke } from "@tauri-apps/api";
 import { listen } from "@tauri-apps/api/event";
+let setting_loaded: boolean = false;
 
 export default function Home() {
   function setTheme(theme: string) {
@@ -16,7 +17,10 @@ export default function Home() {
     await invoke("read_settings");
   };
   useEffect(() => {
-    loadSettings();
+    if (!setting_loaded) {
+      loadSettings();
+      setting_loaded = true;
+    }
   }, []);
 
   listen<{ theme: string }>("settings_retrived", (event) => {
