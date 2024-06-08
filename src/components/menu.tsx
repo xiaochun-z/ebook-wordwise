@@ -3,13 +3,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHome, faUserCog, faBook } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 
-export async function getStaticProps() {
-  return {
-    props: {
-      settings: {},
-    },
-  };
-}
 function Menu() {
   return (
     <Fragment>
