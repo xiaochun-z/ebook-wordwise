@@ -4,6 +4,10 @@ import Home from "./pages/home";
 import Settings from "./pages/settings";
 // import { invoke } from "@tauri-apps/api/tauri";
 import "./App.css";
+import { useEffect } from "react";
+import { GetSettings } from "./utils/setting";
+
+let setting_loaded: boolean = false;
 
 function App() {
   // const [greetMsg, setGreetMsg] = useState("");
@@ -13,6 +17,24 @@ function App() {
   //   // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
   //   setGreetMsg(await invoke("greet", { name }));
   // }
+  function setTheme(theme: string) {
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else if (theme == "light") {
+      document.documentElement.classList.remove("dark");
+    }
+  }
+
+  useEffect(() => {
+    if (!setting_loaded) {
+      GetSettings().then((res) => {
+        setTheme(res.theme);
+        console.log(res);
+      });
+      setting_loaded = true;
+    }
+  }, []);
+
 
   return (
     <div className="flex min-h-screen flex-row antialiased text-slate-500 dark:text-slate-400 bg-gray-100 dark:bg-slate-900">

@@ -12,7 +12,7 @@ fn get_path() -> Result<std::path::PathBuf, String> {
 async fn save_settings<R: Runtime>(
     _app: tauri::AppHandle<R>,
     _window: tauri::Window<R>,
-    settings: Settings,
+    settings: AppSetting,
 ) -> Result<(), String> {
     let json = serde_json::to_string(&settings).unwrap();
     println!("{}", &json);
@@ -33,7 +33,7 @@ async fn read_settings<R: Runtime>(
     let path = get_path()?;
     let json = std::fs::read_to_string(path).map_err(|e| e.to_string())?;
     println!("{}", &json);
-    let settings: Settings = serde_json::from_str(&json).map_err(|e| e.to_string())?;
+    let settings: AppSetting = serde_json::from_str(&json).map_err(|e| e.to_string())?;
     // return settings object to javascript app
     window
         .emit("settings_retrived", settings)
@@ -49,6 +49,6 @@ fn main() {
 }
 
 #[derive(serde::Serialize, Deserialize, Clone, Debug)]
-struct Settings {
+struct AppSetting {
     theme: String,
 }

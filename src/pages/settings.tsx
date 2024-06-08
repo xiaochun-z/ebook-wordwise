@@ -1,7 +1,5 @@
-import { invoke } from "@tauri-apps/api/tauri";
-import { listen } from "@tauri-apps/api/event";
 import { useState } from "react";
-
+import { AppSetting, GetSettings, SaveSettings } from "../utils/setting";
 
 function setTheme(theme: string) {
   if (theme === "dark") {
@@ -10,24 +8,24 @@ function setTheme(theme: string) {
     document.documentElement.classList.remove("dark");
   }
 
-  const settings = {
+  const settings:AppSetting = {
     theme: theme,
   };
-  invoke("save_settings", { settings: settings }).then((res) => {
+
+  SaveSettings(settings).then((res) => {
     console.log(res);
-  });
+  })
 }
 
 function SettingsPage() {
   const [setting_text, set_setting_text] = useState("");
   async function read_settings() {
-    await invoke("read_settings");
-  }
+    GetSettings().then((res) => {
+      set_setting_text(JSON.stringify(res));
+      console.log(res);
+    });
+  };
 
-  listen("settings_retrived", (event) => {
-    //console.log(event.payload);
-    set_setting_text(JSON.stringify(event.payload));
-  });
 
   return (
     <div>
