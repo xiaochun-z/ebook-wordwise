@@ -21,9 +21,9 @@ export default function Home() {
     { value: "cn", text: "Chinese" },
   ];
   const supported_formats = [
-    { value: "epub", text: "EPUB" },
-    { value: "mobi", text: "EPUB" },
-    { value: "pdf", text: "PDF" },
+    { value: "epub", text: "epub" },
+    { value: "mobi", text: "mobi" },
+    { value: "pdf", text: "pdf" },
   ];
   return (
     <Fragment>
