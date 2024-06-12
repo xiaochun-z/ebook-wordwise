@@ -2,10 +2,11 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 use serde::Deserialize;
 use tauri::Runtime;
+mod shenhe;
 
 fn get_path() -> Result<std::path::PathBuf, String> {
-  let cwd = std::env::current_dir().map_err(|e| e.to_string())?;
-  Ok(cwd.join("settings.json"))
+    let cwd = std::env::current_dir().map_err(|e| e.to_string())?;
+    Ok(cwd.join("settings.json"))
 }
 
 #[tauri::command]
@@ -42,6 +43,7 @@ async fn read_settings<R: Runtime>(
 }
 
 fn main() {
+    //use shenhe::{DictRow,load_dict};
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![read_settings, save_settings])
         .run(tauri::generate_context!())
