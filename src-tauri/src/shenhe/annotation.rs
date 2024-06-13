@@ -77,6 +77,7 @@ pub fn annotate_phrase(
     sentence: &str,
     dict: &HashMap<String, DictRecord>,
     lemma_dict: &HashMap<String, String>,
+    def_length: i32,
     including_phoneme: bool,
     hint_level: i32,
 ) -> String {
@@ -84,7 +85,6 @@ pub fn annotate_phrase(
     let mut result = String::new();
     let mut i = 0;
     let max_phrase_length = 5;
-    let def_length = 1;
 
     while i < words.len() {
         let mut longest_match = None;
@@ -306,7 +306,7 @@ mod tests {
         let lemma = load_lemma().unwrap();
         let anotator = RubyAnnotator {};
         for (input, output, lvl) in data {
-            let result = annotate_phrase(&anotator, input, &hashes, &lemma, false, lvl);
+            let result = annotate_phrase(&anotator, input, &hashes, &lemma,1, false, lvl);
             assert_eq!(result, output);
         }
     }

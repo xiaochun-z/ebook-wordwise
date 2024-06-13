@@ -6,12 +6,19 @@ use annotation::{annotate_phrase, load_dict, load_lemma};
 use html::{process_html, read_html_content};
 use types::RubyAnnotator;
 
-pub fn process(file: &str, language: &str) -> String {
+pub fn process(
+    file: &str,
+    language: &str,
+    book_format: &str,
+    include_phoneme: bool,
+    def_len: i32,
+    hint_level: i32,
+) -> String {
+    println!("book format: {}", book_format);
     let lemma = load_lemma().unwrap();
     let annotation_dict = load_dict(language).unwrap();
     let ruby_annotator = RubyAnnotator {};
-    let include_phoneme = false;
-    let hint_level = 1;
+
     let process_text_wrapper = Box::new(move |input: &str| {
         if input.trim().is_empty() {
             return input.to_string();
@@ -22,6 +29,7 @@ pub fn process(file: &str, language: &str) -> String {
             input,
             &annotation_dict,
             &lemma,
+            def_len,
             include_phoneme,
             hint_level,
         );

@@ -47,7 +47,7 @@ fn main() {
     // use shenhe::html;
     // html::main();
     use shenhe::process;
-    process("resources/sample.xml","en");
+    process("resources/sample.xml", "en", "epub", true, 1, 1);
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![read_settings, save_settings])
         .run(tauri::generate_context!())
