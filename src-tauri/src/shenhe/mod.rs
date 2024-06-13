@@ -28,7 +28,7 @@ pub fn process(file: &str, language: &str) -> String {
         res
     });
 
-    let fn_ptr: Box<dyn Fn(&str) -> String> = process_text_wrapper;
+    let fn_ptr: &dyn Fn(&str) -> String = process_text_wrapper.as_ref();
 
     let html_content = read_html_content(file);
     let new_html_content = process_html(html_content.as_str(), fn_ptr);

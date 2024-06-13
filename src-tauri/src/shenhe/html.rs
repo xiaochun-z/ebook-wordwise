@@ -2,7 +2,7 @@ use kuchiki::parse_html;
 use kuchiki::traits::*;
 use kuchiki::NodeRef;
 
-pub fn process_html(input: &str, process_text: Box<dyn Fn(&str) -> String>) -> String {
+pub fn process_html(input: &str, process_text: &(dyn Fn(&str) -> String)) -> String {
     let document = kuchiki::parse_html().one(input);
 
     // Collect all text nodes
@@ -66,7 +66,7 @@ pub fn main() {
         return res;
     });
 
-    let processed_html = process_html(input_html.as_str(), process_text);
+    let processed_html = process_html(input_html.as_str(), process_text.as_ref());
     println!("{}", processed_html);
 }
 
@@ -81,11 +81,22 @@ mod tests {
                 return input.to_string();
             }
 
-            input.replace("world", "xiaoxiao")
+            input.replace("world", "xiaoxiao").replace("fear", "fare")
         });
-        let input_html = r#"<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>hello world</title></head><body><div>hello <span style="color:red">world</span><img src="title.jpg"></div></body></html>"#;
-        let processed_html = process_html(input_html, process_text);
-        let expect = r#"<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>hello world</title></head><body><div>hello <span style="color:red">xiaoxiao</span><img src="title.jpg"></div></body></html>"#;
-        assert_eq!(expect, processed_html);
+        let data = [
+            (
+                r#"<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>hello world</title></head><body><div>hello <span style="color:red">world</span><img src="title.jpg"></div></body></html>"#,
+                r#"<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>hello world</title></head><body><div>hello <span style="color:red">xiaoxiao</span><img src="title.jpg"></div></body></html>"#,
+            ),
+            (
+                r#"<html><head></head><body class="calibre"><p class="calibre_1">for <span style="color:red">fear</span> I</p></body></html>"#,
+                r#"<html><head></head><body class="calibre"><p class="calibre_1">for <span style="color:red">fare</span> I</p></body></html>"#,
+            ),
+        ];
+
+        for (input, output) in data {
+            let processed_html = process_html(input, process_text.as_ref());
+            assert_eq!(processed_html, output);
+        }
     }
 }
