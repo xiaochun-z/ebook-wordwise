@@ -1,6 +1,7 @@
 mod annotation;
 mod html;
 mod types;
+mod cmd;
 
 use annotation::{annotate_phrase, load_dict, load_lemma};
 use html::{process_html, read_html_content};
