@@ -1,20 +1,32 @@
 import { Fragment, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { appWindow } from "@tauri-apps/api/window";
 import {
   faFolderOpen,
   faArrowsRotate,
 } from "@fortawesome/free-solid-svg-icons";
 
 export default function Home() {
-  const [range, setRange] = useState("3");
-  const [language, setLanguage] = useState("en");
+  const [book, setbook] = useState("");
   const [format, setFormat] = useState("epub");
+  const [language, setLanguage] = useState("en");
+  const [hintLevel, setHintLevel] = useState("3");
+  const [allowLong, setAllowLong] = useState(false);
+  const [showPhoneme, setShowPhoneme] = useState(false);
   const [progress, setProgress] = useState(30);
   const [working, setWorking] = useState(false);
 
   function start_job() {
     setWorking(!working);
     setProgress(80);
+    appWindow.emit("event-startjob", {
+      book: book,
+      format: format,
+      language: language,
+      hint_level: parseInt(hintLevel),
+      allow_long: Boolean(allowLong),
+      show_phoneme: Boolean(showPhoneme),
+    });
   }
   const supported_languages = [
     { value: "en", text: "English" },
@@ -46,6 +58,8 @@ export default function Home() {
               <input
                 type="text"
                 id="book-location-icon"
+                value={book}
+                onChange={(e) => setbook(e.target.value)}
                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 placeholder="select your ebook from your computer..."
               />
@@ -117,15 +131,21 @@ export default function Home() {
             min="1"
             max="5"
             step="1"
-            value={range}
+            value={hintLevel}
             className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
             disabled={false}
-            onChange={(e) => setRange(e.target.value)}
+            onChange={(e) => setHintLevel(e.target.value)}
           />
         </div>
         <div className="flex flex-row space-x-5">
           <label className="inline-flex items-center mb-5 cursor-pointer">
-            <input type="checkbox" value="" className="sr-only peer" />
+            <input
+              type="checkbox"
+              value=""
+              checked={allowLong}
+              onChange={(e) => setAllowLong(!allowLong)}
+              className="sr-only peer"
+            />
             <div
               className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4
              peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer
@@ -135,11 +155,17 @@ export default function Home() {
                 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"
             ></div>
             <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
-              Show detailed tips
+              Allow Long Description
             </span>
           </label>
           <label className="inline-flex items-center mb-5 cursor-pointer">
-            <input type="checkbox" value="" className="sr-only peer" />
+            <input
+              type="checkbox"
+              value=""
+              className="sr-only peer"
+              checked={showPhoneme}
+              onChange={(e) => setShowPhoneme(!showPhoneme)}
+            />
             <div
               className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4
              peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 

@@ -306,7 +306,7 @@ mod tests {
         let lemma = load_lemma().unwrap();
         let anotator = RubyAnnotator {};
         for (input, output, lvl) in data {
-            let result = annotate_phrase(&anotator, input, &hashes, &lemma,1, false, lvl);
+            let result = annotate_phrase(&anotator, input, &hashes, &lemma, 1, false, lvl);
             assert_eq!(result, output);
         }
     }

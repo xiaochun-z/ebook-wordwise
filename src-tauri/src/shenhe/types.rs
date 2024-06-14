@@ -92,3 +92,13 @@ impl Annotator for RubyAnnotator {
         target.replace(target, &update)
     }
 }
+
+#[derive(Clone, Serialize, Deserialize, Debug)]
+pub struct Payload {
+    book: String,
+    format: String,
+    language: String,
+    hint_level: i32,
+    allow_long: bool,
+    show_phoneme: bool,
+}

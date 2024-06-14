@@ -2,7 +2,11 @@ use kuchiki::parse_html;
 use kuchiki::traits::*;
 use kuchiki::NodeRef;
 
-pub fn process_html(input: &str, process_text: &(dyn Fn(&str) -> String)) -> String {
+pub fn process_html(
+    input: &str,
+    process_text_fn: &(dyn Fn(&str) -> String),
+    progress_fn: Option<&dyn Fn(f32)>,
+) -> String {
     let document = kuchiki::parse_html().one(input);
 
     // Collect all text nodes
@@ -14,11 +18,19 @@ pub fn process_html(input: &str, process_text: &(dyn Fn(&str) -> String)) -> Str
         .map(|n| n.clone())
         .collect();
 
+    let total: f32 = text_nodes.len() as f32;
+    let mut i: f32 = 0.0;
     // Process each text node
     for text_node in text_nodes {
+        if let Some(progress) = progress_fn {
+            i += 1.0;
+            let current_progress = 0.2 + (0.9 - 0.2) * i / total;// map 0-100 to 20-90
+            progress(current_progress);
+        }
+
         if let Some(text) = text_node.as_text() {
             let original_text = text.borrow().to_string();
-            let processed_text = process_text(&original_text);
+            let processed_text = process_text_fn(&original_text);
 
             if processed_text != original_text {
                 if processed_text.contains('<') && processed_text.contains('>') {
@@ -66,7 +78,7 @@ pub fn main() {
         return res;
     });
 
-    let processed_html = process_html(input_html.as_str(), process_text.as_ref());
+    let processed_html = process_html(input_html.as_str(), process_text.as_ref(), None);
     println!("{}", processed_html);
 }
 
@@ -95,7 +107,7 @@ mod tests {
         ];
 
         for (input, output) in data {
-            let processed_html = process_html(input, process_text.as_ref());
+            let processed_html = process_html(input, process_text.as_ref(), None);
             assert_eq!(processed_html, output);
         }
     }
