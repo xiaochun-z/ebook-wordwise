@@ -1,6 +1,8 @@
 import { Fragment, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { appWindow } from "@tauri-apps/api/window";
+import { invoke } from "@tauri-apps/api/tauri";
+import { listen } from "@tauri-apps/api/event";
 import {
   faFolderOpen,
   faArrowsRotate,
@@ -28,6 +30,22 @@ export default function Home() {
       show_phoneme: Boolean(showPhoneme),
     });
   }
+
+  async function select_book_dialog(): Promise<string> {
+    return new Promise(async (resolve, reject) => {
+      if (window.__TAURI_METADATA__) {
+        try {
+          const book_path: string = await invoke<string>("open_file_dialog", { initialPath: book });
+          setbook(book_path);
+          resolve(book_path);
+        }
+        catch (e) {
+          reject(e);
+        }
+      }
+    });
+  }
+
   const supported_languages = [
     { value: "en", text: "English" },
     { value: "cn", text: "Chinese" },
@@ -66,6 +84,7 @@ export default function Home() {
             </div>
             <button
               type="button"
+              onClick={select_book_dialog}
               className="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2"
             >
               Browse...

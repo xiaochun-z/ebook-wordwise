@@ -5,6 +5,8 @@ use serde_json::from_str;
 use shenhe::types::Payload;
 use tauri::{Event, Manager, Runtime};
 mod shenhe;
+use std::path::Path;
+use tauri::{api::dialog::FileDialogBuilder, Builder};
 
 fn get_path() -> Result<std::path::PathBuf, String> {
     let cwd = std::env::current_dir().map_err(|e| e.to_string())?;
@@ -43,6 +45,31 @@ async fn read_settings<R: Runtime>(
         .map_err(|e| e.to_string())?;
     Ok(())
 }
+
+#[tauri::command]
+async fn open_file_dialog(initial_path: String) -> Result<String, String> {
+    //println!("{}", initial_path);
+    let (tx, rx) = tokio::sync::oneshot::channel();
+
+    let initial_path = Path::new(&initial_path);
+    let dialog = if initial_path.exists() {
+        FileDialogBuilder::new().set_directory(initial_path)
+    } else {
+        FileDialogBuilder::new()
+    };
+
+    dialog.pick_file(move |file_path| {
+        if let Some(path) = file_path {
+            //println!("Selected file: {:?}", path);
+            let res = path.to_string_lossy().into_owned();
+            tx.send(Ok(res)).unwrap();
+        } else {
+            tx.send(Err("No file selected".into())).unwrap();
+        }
+    });
+    rx.await.unwrap()
+}
+
 fn progress_fn(progress: f32) {
     println!("Progress: {:.2}%", progress * 100.0);
 }
@@ -67,8 +94,12 @@ fn main() {
         1,
         &progress_fn,
     );
-    tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![read_settings, save_settings])
+    Builder::default()
+        .invoke_handler(tauri::generate_handler![
+            read_settings,
+            save_settings,
+            open_file_dialog
+        ])
         .setup(|app| {
             let main_window = app.get_window("main").unwrap();
             main_window.listen("event-startjob", button_click_handler);
