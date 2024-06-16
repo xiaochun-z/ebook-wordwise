@@ -95,10 +95,10 @@ impl Annotator for RubyAnnotator {
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct Payload {
-    book: String,
-    format: String,
-    language: String,
-    hint_level: i32,
-    allow_long: bool,
-    show_phoneme: bool,
+    pub book: String,
+    pub format: String,
+    pub language: String,
+    pub hint_level: i32,
+    pub allow_long: bool,
+    pub show_phoneme: bool,
 }

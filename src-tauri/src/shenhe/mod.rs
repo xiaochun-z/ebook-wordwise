@@ -42,6 +42,6 @@ pub fn process(
 
     let html_content = read_html_content(file);
     let new_html_content = process_html(html_content.as_str(), fn_ptr, Some(&progress_fn));
-    println!("new_html_content: {}", new_html_content);
+    //println!("new_html_content: {}", new_html_content);
     new_html_content
 }

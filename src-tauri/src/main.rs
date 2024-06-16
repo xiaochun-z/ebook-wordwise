@@ -83,6 +83,17 @@ fn progress_fn(progress: f32) {
 #[tauri::command]
 async fn start_job(payload: Payload) -> Result<String, String> {
     println!("{:?}", payload);
+    use shenhe::process;
+    let book = (&payload).book.as_str(); // TODO: need to convert the book to html first.
+    process(
+        book,
+        (&payload).language.as_str(),
+        (&payload).format.as_str(),
+        (&payload).show_phoneme,
+        if (&payload).allow_long { 2 } else { 1 },
+        (&payload).hint_level,
+        &progress_fn,
+    );
     Ok("With this structure, the text will be aligned on the left side and vertically centered within the right sub-div. Feel free to modify the code or add additional classes to meet your specific styling requirements.".to_string())
 }
 
@@ -90,16 +101,7 @@ fn main() {
     //use shenhe::{DictRow,load_dict};
     // use shenhe::html;
     // html::main();
-    use shenhe::process;
-    process(
-        "resources/sample.xml",
-        "en",
-        "epub",
-        true,
-        1,
-        1,
-        &progress_fn,
-    );
+
     Builder::default()
         .invoke_handler(tauri::generate_handler![
             read_settings,
