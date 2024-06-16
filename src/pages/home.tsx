@@ -1,12 +1,21 @@
 import { Fragment, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { appWindow } from "@tauri-apps/api/window";
+//import { appWindow } from "@tauri-apps/api/window";
 import { invoke } from "@tauri-apps/api/tauri";
-import { listen } from "@tauri-apps/api/event";
+//import { listen } from "@tauri-apps/api/event";
 import {
   faFolderOpen,
   faArrowsRotate,
 } from "@fortawesome/free-solid-svg-icons";
+
+class WorkMesg {
+  className: string;
+  text: string;
+  constructor(className: string, text: string) {
+    this.className = className;
+    this.text = text;
+  }
+}
 
 export default function Home() {
   const [book, setbook] = useState("");
@@ -17,18 +26,22 @@ export default function Home() {
   const [showPhoneme, setShowPhoneme] = useState(false);
   const [progress, setProgress] = useState(30);
   const [working, setWorking] = useState(false);
+  const [workmesg, setWorkMesg] = useState<WorkMesg>({ className: " ", text: "this is the default message, only 1 line long and aligned in the middle." });
 
-  function start_job() {
+  async function start_job() {
     setWorking(!working);
     setProgress(80);
-    appWindow.emit("event-startjob", {
-      book: book,
-      format: format,
-      language: language,
-      hint_level: parseInt(hintLevel),
-      allow_long: Boolean(allowLong),
-      show_phoneme: Boolean(showPhoneme),
+    const result: string = await invoke<string>("start_job", {
+      payload: {
+        book: book,
+        format: format,
+        language: language,
+        hint_level: parseInt(hintLevel),
+        allow_long: Boolean(allowLong),
+        show_phoneme: Boolean(showPhoneme),
+      }
     });
+    setWorkMesg(new WorkMesg("text-sky-950", result));
   }
 
   async function select_book_dialog(): Promise<string> {
@@ -198,7 +211,7 @@ export default function Home() {
             </span>
           </label>
         </div>
-        <div>
+        <div className="flex flex-row space-x-5">
           <button
             type="button"
             onClick={start_job}
@@ -215,6 +228,9 @@ export default function Home() {
             }
             Process
           </button>
+          <div className="flex items-center">
+            <div id="message" className={`text-blue-800 line-clamp-2 ${workmesg.className}`}>{workmesg.text}</div>
+          </div>
         </div>
         <div className="pt-5">
           <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4 dark:bg-gray-700">

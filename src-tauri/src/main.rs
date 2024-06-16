@@ -74,10 +74,16 @@ fn progress_fn(progress: f32) {
     println!("Progress: {:.2}%", progress * 100.0);
 }
 
-fn button_click_handler(event: Event) {
-    // convert payload to struct Payload
-    let payload: Payload = from_str(event.payload().unwrap()).unwrap();
-    println!("payload: {:?}", payload);
+// fn button_click_handler(event: Event) {
+//     // convert payload to struct Payload
+//     let payload: Payload = from_str(event.payload().unwrap()).unwrap();
+//     println!("payload: {:?}", payload);
+// }
+
+#[tauri::command]
+async fn start_job(payload: Payload) -> Result<String, String> {
+    println!("{:?}", payload);
+    Ok("With this structure, the text will be aligned on the left side and vertically centered within the right sub-div. Feel free to modify the code or add additional classes to meet your specific styling requirements.".to_string())
 }
 
 fn main() {
@@ -98,15 +104,16 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             read_settings,
             save_settings,
-            open_file_dialog
+            open_file_dialog,
+            start_job,
         ])
-        .setup(|app| {
-            let main_window = app.get_window("main").unwrap();
-            main_window.listen("event-startjob", button_click_handler);
-            // let handler_id = main_window.listen("event-startjob", button_click_handler);
-            //main_window.unlisten(handler_id);
-            Ok(())
-        })
+        // .setup(|app| {
+        //     let main_window = app.get_window("main").unwrap();
+        //     main_window.listen("event-startjob", button_click_handler);
+        //     // let handler_id = main_window.listen("event-startjob", button_click_handler);
+        //     //main_window.unlisten(handler_id);
+        //     Ok(())
+        // })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
