@@ -1,12 +1,19 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 use serde::Deserialize;
-use serde_json::from_str;
-use shenhe::types::Payload;
-use tauri::{Event, Manager, Runtime};
+//use serde_json::from_str;
+//use tauri::AppHandle;
+//use tauri::{Event, Manager, Runtime};
 mod shenhe;
+use shenhe::{
+    cmd::{ebook_convert_exists, run_command},
+    html::write_html_content,
+    process,
+    types::Payload,
+};
 use std::path::Path;
-use tauri::{api::dialog::FileDialogBuilder, Builder};
+use tauri::{api::dialog::FileDialogBuilder, Builder, Runtime};
+use uuid::Uuid;
 
 fn get_path() -> Result<std::path::PathBuf, String> {
     let cwd = std::env::current_dir().map_err(|e| e.to_string())?;
@@ -70,8 +77,11 @@ async fn open_file_dialog(initial_path: String) -> Result<String, String> {
     rx.await.unwrap()
 }
 
-fn progress_fn(progress: f32) {
+fn progress_fn<R: Runtime>(progress: f32, tauri_window: Option<&tauri::Window<R>>) {
     println!("Progress: {:.2}%", progress * 100.0);
+    if let Some(window) = tauri_window {
+        window.emit("event-progress", progress).unwrap();
+    }
 }
 
 // fn button_click_handler(event: Event) {
@@ -79,22 +89,86 @@ fn progress_fn(progress: f32) {
 //     let payload: Payload = from_str(event.payload().unwrap()).unwrap();
 //     println!("payload: {:?}", payload);
 // }
+#[tauri::command]
+fn check_ebook_convert() -> Result<bool, String> {
+    let exists = ebook_convert_exists();
+    Ok(exists)
+}
 
 #[tauri::command]
-async fn start_job(payload: Payload) -> Result<String, String> {
+async fn start_job<R: Runtime>(
+    window: tauri::Window<R>,
+    payload: Payload,
+) -> Result<String, String> {
+    window
+        .emit("event-progress", 0.0)
+        .map_err(|e| e.to_string())?;
+    const EBOOK_CONVERT: &'static str = "ebook-convert";
     println!("{:?}", payload);
-    use shenhe::process;
-    let book = (&payload).book.as_str(); // TODO: need to convert the book to html first.
-    process(
-        book,
+    let book = (&payload).book.as_str();
+    let book_path = Path::new(book).parent().unwrap().to_str().unwrap();
+    let book_name_without_ext = Path::new(book).file_stem().unwrap().to_str().unwrap();
+
+    let uuid = Uuid::new_v4().to_string();
+    let book_out_dir: String = format!("{}/{}/", book_path, uuid);
+    std::fs::create_dir_all(&book_out_dir).map_err(|e| e.to_string())?;
+    let book_dump = format!("{}/{}.htmlz", book_path, book_name_without_ext);
+    run_command(EBOOK_CONVERT, &[book, book_dump.as_str()])?;
+    window
+        .emit("event-progress", 10.0)
+        .map_err(|e| e.to_string())?;
+    run_command(
+        EBOOK_CONVERT,
+        &[book_dump.as_str(), (&book_out_dir).as_str()],
+    )?;
+    window
+        .emit("event-progress", 20.0)
+        .map_err(|e| e.to_string())?;
+
+    let html_file = format!("{}/index1.html", book_out_dir);
+    let artifact_file = format!(
+        "{}/{}-wordwise.{}",
+        book_path,
+        book_name_without_ext,
+        (&payload).format
+    );
+
+    let html = process(
+        html_file.as_str(),
         (&payload).language.as_str(),
         (&payload).format.as_str(),
         (&payload).show_phoneme,
         if (&payload).allow_long { 2 } else { 1 },
         (&payload).hint_level,
         &progress_fn,
-    );
-    Ok("With this structure, the text will be aligned on the left side and vertically centered within the right sub-div. Feel free to modify the code or add additional classes to meet your specific styling requirements.".to_string())
+        Some(&window),
+    )?;
+    write_html_content(&html_file, html.as_str())?;
+    let meta_file = format!("{}/content.opf", book_out_dir);
+    run_command(
+        EBOOK_CONVERT,
+        &[
+            html_file.as_str(),
+            artifact_file.as_str(),
+            "-m",
+            meta_file.as_str(),
+        ],
+    )?;
+    window
+        .emit("event-progress", 95.0)
+        .map_err(|e| e.to_string())?;
+    // remove the temp files and folders
+    std::fs::remove_file(book_dump).map_err(|e| e.to_string())?;
+    std::fs::remove_dir_all(book_out_dir).map_err(|e| e.to_string())?;
+    window
+        .emit("event-progress", 100.0)
+        .map_err(|e| e.to_string())?;
+    let artifact_file = Path::new(artifact_file.as_str())
+        .file_name()
+        .unwrap()
+        .to_str()
+        .unwrap();
+    Ok(format!("{} save to {}", artifact_file, book_path))
 }
 
 fn main() {
@@ -108,12 +182,13 @@ fn main() {
             save_settings,
             open_file_dialog,
             start_job,
+            check_ebook_convert,
         ])
         // .setup(|app| {
-        //     let main_window = app.get_window("main").unwrap();
-        //     main_window.listen("event-startjob", button_click_handler);
-        //     // let handler_id = main_window.listen("event-startjob", button_click_handler);
-        //     //main_window.unlisten(handler_id);
+        //let main_window = app.get_window("main").unwrap();
+        //main_window.listen("event-startjob", button_click_handler);
+        // let handler_id = main_window.listen("event-startjob", button_click_handler);
+        //main_window.unlisten(handler_id);
         //     Ok(())
         // })
         .run(tauri::generate_context!())

@@ -1,8 +1,8 @@
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 //import { appWindow } from "@tauri-apps/api/window";
 import { invoke } from "@tauri-apps/api/tauri";
-//import { listen } from "@tauri-apps/api/event";
+import { listen } from "@tauri-apps/api/event";
 import {
   faFolderOpen,
   faArrowsRotate,
@@ -18,20 +18,51 @@ class WorkMesg {
 }
 
 export default function Home() {
+  async function check_ebook_convert() {
+    await invoke<boolean>("check_ebook_convert").then((result) => {
+      if (result) {
+        setWorkMesg(
+          new WorkMesg(
+            "text-green-800 dark:text-green-300",
+            "Calibre detected, you're good to go!"
+          )
+        );
+      } else {
+        setWorkMesg(
+          new WorkMesg(
+            "text-red-800 dark:text-red-300",
+            "Calibre is not detected, please install calibre and add calibre to your PATH."
+          )
+        );
+      }
+    });
+  }
+  
+
+  useEffect(() => {
+    check_ebook_convert();
+    if (window.__TAURI_METADATA__) {
+      listen<number>("event-progress", (event) => {
+        setProgress(event.payload);
+      });
+    }
+  }, []);
   const [book, setbook] = useState("");
   const [format, setFormat] = useState("epub");
   const [language, setLanguage] = useState("en");
   const [hintLevel, setHintLevel] = useState("3");
   const [allowLong, setAllowLong] = useState(false);
   const [showPhoneme, setShowPhoneme] = useState(false);
-  const [progress, setProgress] = useState(30);
+  const [progress, setProgress] = useState(0);
   const [working, setWorking] = useState(false);
-  const [workmesg, setWorkMesg] = useState<WorkMesg>({ className: " ", text: "this is the default message, only 1 line long and aligned in the middle." });
+  const [workmesg, setWorkMesg] = useState<WorkMesg>({
+    className: " ",
+    text: "",
+  });
 
   async function start_job() {
-    setWorking(!working);
-    setProgress(80);
-    const result: string = await invoke<string>("start_job", {
+    setWorking(true);
+    await invoke<string>("start_job", {
       payload: {
         book: book,
         format: format,
@@ -39,20 +70,28 @@ export default function Home() {
         hint_level: parseInt(hintLevel),
         allow_long: Boolean(allowLong),
         show_phoneme: Boolean(showPhoneme),
-      }
-    });
-    setWorkMesg(new WorkMesg("text-sky-950", result));
+      },
+    })
+      .then((result) => {
+        setWorkMesg(new WorkMesg("text-blue-800 dark:text-blue-300", result));
+      })
+      .catch((error) => {
+        setWorkMesg(new WorkMesg("text-red-800 dark:text-red-300", error));
+      });
+
+    setWorking(false);
   }
 
   async function select_book_dialog(): Promise<string> {
     return new Promise(async (resolve, reject) => {
       if (window.__TAURI_METADATA__) {
         try {
-          const book_path: string = await invoke<string>("open_file_dialog", { initialPath: book });
+          const book_path: string = await invoke<string>("open_file_dialog", {
+            initialPath: book,
+          });
           setbook(book_path);
           resolve(book_path);
-        }
-        catch (e) {
+        } catch (e) {
           reject(e);
         }
       }
@@ -229,7 +268,9 @@ export default function Home() {
             Process
           </button>
           <div className="flex items-center">
-            <div id="message" className={`text-blue-800 line-clamp-2 ${workmesg.className}`}>{workmesg.text}</div>
+            <div id="message" className={`line-clamp-2 ${workmesg.className}`}>
+              {workmesg.text}
+            </div>
           </div>
         </div>
         <div className="pt-5">

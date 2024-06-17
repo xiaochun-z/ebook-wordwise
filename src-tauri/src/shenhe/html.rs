@@ -1,12 +1,14 @@
 use kuchiki::parse_html;
 use kuchiki::traits::*;
 use kuchiki::NodeRef;
+use tauri::Runtime;
 
-pub fn process_html(
+pub fn process_html<R: Runtime>(
     input: &str,
     process_text_fn: &(dyn Fn(&str) -> String),
-    progress_fn: Option<&dyn Fn(f32)>,
-) -> String {
+    progress_fn: Option<&dyn Fn(f32, Option<&tauri::Window<R>>)>,
+    tauri_window: Option<&tauri::Window<R>>,
+) -> Result<String, String> {
     let document = kuchiki::parse_html().one(input);
 
     // Collect all text nodes
@@ -24,8 +26,8 @@ pub fn process_html(
     for text_node in text_nodes {
         if let Some(progress) = progress_fn {
             i += 1.0;
-            let current_progress = 0.2 + (0.9 - 0.2) * i / total;// map 0-100 to 20-90
-            progress(current_progress);
+            let current_progress = 0.2 + (0.9 - 0.2) * i / total; // map 0-100 to 20-90
+            progress(current_progress, tauri_window);
         }
 
         if let Some(text) = text_node.as_text() {
@@ -56,36 +58,26 @@ pub fn process_html(
     }
 
     let mut output = vec![];
-    document.serialize(&mut output).unwrap();
-    String::from_utf8(output).unwrap()
+    let _ = document
+        .serialize(&mut output)
+        .map_err(|err| err.to_string());
+    std::str::from_utf8(&output)
+        .map(|res| res.to_string())
+        .map_err(|err| err.to_string())
 }
 
-pub fn read_html_content(path: &str) -> String {
-    let content = std::fs::read_to_string(path).unwrap();
-    return content;
+pub fn read_html_content(path: &str) -> Result<String, String> {
+    std::fs::read_to_string(path).map_err(|err| err.to_string())
 }
 
-#[allow(dead_code)]
-pub fn main() {
-    let input_html = read_html_content("resources/sample.xml");
-
-    let process_text = Box::new(move |input: &str| {
-        if input.trim().is_empty() {
-            return input.to_string();
-        }
-
-        let res = input.replace("fear", "touch");
-        return res;
-    });
-
-    let processed_html = process_html(input_html.as_str(), process_text.as_ref(), None);
-    println!("{}", processed_html);
+pub fn write_html_content(path: &str, contents: &str) -> Result<(), String> {
+    std::fs::write(path, contents).map_err(|err| err.to_string())
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
+    use tauri::Wry;
     #[test]
     fn test_process_html() {
         let process_text = Box::new(move |input: &str| {
@@ -107,8 +99,8 @@ mod tests {
         ];
 
         for (input, output) in data {
-            let processed_html = process_html(input, process_text.as_ref(), None);
-            assert_eq!(processed_html, output);
+            let processed_html = process_html::<Wry>(input, process_text.as_ref(), None, None);
+            assert_eq!(processed_html.unwrap(), output);
         }
     }
 }

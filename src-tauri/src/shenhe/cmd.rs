@@ -1,7 +1,7 @@
 use std::io::{self, Write};
 use std::process::Command;
 
-fn run_command(name: &str, args: &[&str]) -> Result<String, String> {
+pub fn run_command(name: &str, args: &[&str]) -> Result<String, String> {
     let output = Command::new(name)
         .args(args)
         .output()
@@ -25,6 +25,13 @@ fn run_command(name: &str, args: &[&str]) -> Result<String, String> {
     }
 }
 
+pub fn ebook_convert_exists() -> bool {
+    Command::new("ebook-convert")
+        .arg("--version")
+        .output()
+        .is_ok()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -38,5 +45,10 @@ mod tests {
                 error
             ),
         }
+    }
+
+    #[test]
+    fn test_ebook_convert_exists() {
+        assert!(ebook_convert_exists());
     }
 }
