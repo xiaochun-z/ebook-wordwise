@@ -6,7 +6,7 @@ pub mod types;
 use annotation::{annotate_phrase, load_dict, load_lemma};
 use html::{process_html, read_html_content};
 use tauri::Runtime;
-use types::RubyAnnotator;
+use types::{ProgressReporter, RubyAnnotator};
 
 pub fn process<R: Runtime>(
     file: &str,
@@ -15,8 +15,7 @@ pub fn process<R: Runtime>(
     include_phoneme: bool,
     def_len: i32,
     hint_level: i32,
-    progress_fn: &(dyn Fn(f32, Option<&tauri::Window<R>>)),
-    tauri_window: Option<&tauri::Window<R>>,
+    reporter: Option<&ProgressReporter<R>>,
 ) -> Result<String, String> {
     println!("book format: {}", book_format);
     let lemma = load_lemma().unwrap();
@@ -45,14 +44,7 @@ pub fn process<R: Runtime>(
     let html_content = read_html_content(file)?;
 
     let html_content = html_content;
-    let new_html_content = process_html(
-        html_content.as_str(),
-        fn_ptr,
-        Some(&progress_fn),
-        tauri_window,
-    )?;
+    let new_html_content = process_html(html_content.as_str(), fn_ptr, reporter)?;
     //println!("new_html_content: {}", new_html_content);
-    //let file_name_without_path = file.split('/').last().unwrap();
-    //Ok(format!("{} was processed successfully",  file_name_without_path))
     Ok(new_html_content)
 }

@@ -10,6 +10,7 @@ use shenhe::{
     html::write_html_content,
     process,
     types::Payload,
+    types::ProgressReporter,
 };
 use std::path::Path;
 use tauri::{api::dialog::FileDialogBuilder, Builder, Runtime};
@@ -77,11 +78,10 @@ async fn open_file_dialog(initial_path: String) -> Result<String, String> {
     rx.await.unwrap()
 }
 
-fn progress_fn<R: Runtime>(progress: f32, tauri_window: Option<&tauri::Window<R>>) {
-    println!("Progress: {:.2}%", progress * 100.0);
-    if let Some(window) = tauri_window {
-        window.emit("event-progress", progress).unwrap();
-    }
+fn progress_fn<R: Runtime>(progress: f32, tauri_window: &tauri::Window<R>) {
+    let percent = (0.2 + (0.8 - 0.2) * progress) * 100.0; // map to [20%, 80%]
+                                                          //println!("Progress: {:.2}%", percent);
+    tauri_window.emit("event-progress", percent).unwrap();
 }
 
 // fn button_click_handler(event: Event) {
@@ -113,12 +113,15 @@ async fn start_job<R: Runtime>(
     let book_out_dir: String = format!("{}/{}/", book_path, uuid);
     std::fs::create_dir_all(&book_out_dir).map_err(|e| e.to_string())?;
     let book_dump = format!("{}/{}.htmlz", book_path, book_name_without_ext);
-    run_command(EBOOK_CONVERT, &[book, book_dump.as_str()])?;
+    let reporter = ProgressReporter::new(&window, progress_fn);
+
+    run_command(EBOOK_CONVERT, Some(&reporter), &[book, book_dump.as_str()])?;
     window
         .emit("event-progress", 10.0)
         .map_err(|e| e.to_string())?;
     run_command(
         EBOOK_CONVERT,
+        Some(&reporter),
         &[book_dump.as_str(), (&book_out_dir).as_str()],
     )?;
     window
@@ -140,13 +143,13 @@ async fn start_job<R: Runtime>(
         (&payload).show_phoneme,
         if (&payload).allow_long { 2 } else { 1 },
         (&payload).hint_level,
-        &progress_fn,
-        Some(&window),
+        Some(&reporter),
     )?;
     write_html_content(&html_file, html.as_str())?;
     let meta_file = format!("{}/content.opf", book_out_dir);
     run_command(
         EBOOK_CONVERT,
+        Some(&reporter),
         &[
             html_file.as_str(),
             artifact_file.as_str(),

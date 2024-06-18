@@ -1,66 +1,66 @@
-use kuchiki::parse_html;
-use kuchiki::traits::*;
-use kuchiki::NodeRef;
+use kuchiki::{traits::TendrilSink, NodeRef};
 use tauri::Runtime;
+
+use super::types::ProgressReporter;
 
 pub fn process_html<R: Runtime>(
     input: &str,
     process_text_fn: &(dyn Fn(&str) -> String),
-    progress_fn: Option<&dyn Fn(f32, Option<&tauri::Window<R>>)>,
-    tauri_window: Option<&tauri::Window<R>>,
+    reporter: Option<&ProgressReporter<R>>,
 ) -> Result<String, String> {
     let document = kuchiki::parse_html().one(input);
 
-    // Collect all text nodes
-    let text_nodes: Vec<NodeRef> = document
-        .select("body")
-        .unwrap()
-        .flat_map(|n| n.as_node().descendants())
-        .filter(|n| n.as_text().is_some())
-        .map(|n| n.clone())
-        .collect();
+    let body = document
+        .select_first("body")
+        .map_err(|_| "Failed to select body")?;
 
-    let total: f32 = text_nodes.len() as f32;
-    let mut i: f32 = 0.0;
-    // Process each text node
-    for text_node in text_nodes {
-        if let Some(progress) = progress_fn {
-            i += 1.0;
-            let current_progress = 0.2 + (0.9 - 0.2) * i / total; // map 0-100 to 20-90
-            progress(current_progress, tauri_window);
-        }
+    let total = body.as_node().descendants().count() as f32;
+    let mut i = 0.0;
 
-        if let Some(text) = text_node.as_text() {
-            let original_text = text.borrow().to_string();
+    // Process each text node incrementally
+    for descendant in body.as_node().descendants() {
+        i += 1.0;
+        if let Some(text_node) = descendant.as_text() {
+            if let Some(r) = reporter {
+                let current_progress = i / total;
+                r.report(current_progress);
+            }
+
+            let original_text = text_node.borrow().to_string().trim().to_string();
+            if original_text.is_empty() {
+                continue;
+            }
+
+            println!("original_text: {}", original_text);
             let processed_text = process_text_fn(&original_text);
 
             if processed_text != original_text {
                 if processed_text.contains('<') && processed_text.contains('>') {
-                    let fragment = parse_html().one(format!("<div>{}</div>", processed_text));
+                    // Parse the processed text as HTML fragment
+                    let fragment =
+                        kuchiki::parse_html().one(format!("<div>{}</div>", processed_text));
                     let fragment_children: Vec<NodeRef> = fragment
-                        .select("div")
-                        .unwrap()
-                        .next()
+                        .select_first("div")
                         .unwrap()
                         .as_node()
                         .children()
                         .collect();
 
                     for child in fragment_children {
-                        text_node.insert_before(child);
+                        descendant.insert_before(child);
                     }
-                    text_node.detach();
+                    //descendant.detach();
+                    *text_node.borrow_mut() = "".to_string();
                 } else {
-                    *text.borrow_mut() = processed_text;
+                    *text_node.borrow_mut() = processed_text;
                 }
             }
         }
     }
-
     let mut output = vec![];
-    let _ = document
+    document
         .serialize(&mut output)
-        .map_err(|err| err.to_string());
+        .map_err(|err| err.to_string())?;
     std::str::from_utf8(&output)
         .map(|res| res.to_string())
         .map_err(|err| err.to_string())
@@ -99,8 +99,8 @@ mod tests {
         ];
 
         for (input, output) in data {
-            let processed_html = process_html::<Wry>(input, process_text.as_ref(), None, None);
-            assert_eq!(processed_html.unwrap(), output);
+            let processed_html = process_html::<Wry>(input, process_text.as_ref(), None).unwrap();
+            assert_eq!(processed_html, output);
         }
     }
 }

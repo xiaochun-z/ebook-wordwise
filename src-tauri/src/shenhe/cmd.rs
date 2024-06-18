@@ -1,7 +1,15 @@
 use std::io::{self, Write};
 use std::process::Command;
 
-pub fn run_command(name: &str, args: &[&str]) -> Result<String, String> {
+use tauri::Runtime;
+
+use super::types::ProgressReporter;
+
+pub fn run_command<R: Runtime>(
+    name: &str,
+    _reporter: Option<&ProgressReporter<R>>,
+    args: &[&str],
+) -> Result<String, String> {
     let output = Command::new(name)
         .args(args)
         .output()
@@ -34,10 +42,13 @@ pub fn ebook_convert_exists() -> bool {
 
 #[cfg(test)]
 mod tests {
+    use tauri::Wry;
+
     use super::*;
     #[test]
     fn test_run_command() {
-        match run_command("ebook-convert", &["--version"]) {
+        let reporter: Option<&ProgressReporter<Wry>> = None;
+        match run_command("ebook-convert", reporter, &["--version"]) {
             Ok(output) => assert!(output.contains("calibre")),
             Err(error) => assert_eq!(
                 error, "",

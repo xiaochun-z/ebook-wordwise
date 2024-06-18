@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use tauri::Runtime;
 use std::collections::HashSet;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -101,4 +102,23 @@ pub struct Payload {
     pub hint_level: i32,
     pub allow_long: bool,
     pub show_phoneme: bool,
+}
+
+pub struct ProgressReporter<'a, R: Runtime> {
+    progress_fn: fn(f32, &tauri::Window<R>),
+    tauri_window: &'a tauri::Window<R>,
+}
+
+impl<'a, R: Runtime> ProgressReporter<'a, R> {
+    
+    pub fn new(tauri_window: &'a tauri::Window<R>, progress_fn: fn(f32, &tauri::Window<R>)) -> Self {
+        Self {
+            progress_fn,
+            tauri_window,
+        }
+    }
+
+    pub fn report(&self, progress: f32) {
+        (self.progress_fn)(progress, &self.tauri_window);
+    }
 }
