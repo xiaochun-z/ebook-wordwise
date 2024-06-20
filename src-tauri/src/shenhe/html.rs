@@ -44,8 +44,6 @@ pub fn process_html<R: Read + Seek, W: Write, Rt: Runtime>(
             if let Ok(valid_str) = std::str::from_utf8(cl) {
                 slice = valid_str.as_bytes();
                 incomplete_utf8.clear();
-            } else {
-                continue;
             }
         }
 
