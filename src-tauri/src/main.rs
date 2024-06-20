@@ -7,7 +7,6 @@ use serde::Deserialize;
 mod shenhe;
 use shenhe::{
     cmd::{ebook_convert_exists, run_command},
-    html::write_html_content,
     process,
     types::Payload,
     types::ProgressReporter,
@@ -78,9 +77,8 @@ async fn open_file_dialog(initial_path: String) -> Result<String, String> {
     rx.await.unwrap()
 }
 
-fn progress_fn<R: Runtime>(progress: f32, tauri_window: &tauri::Window<R>) {
-    let percent = (0.2 + (0.8 - 0.2) * progress) * 100.0; // map to [20%, 80%]
-                                                          //println!("Progress: {:.2}%", percent);
+fn progress_fn<R: Runtime>(progress: f64, tauri_window: &tauri::Window<R>) {
+    let percent = (0.2 + (0.9 - 0.2) * progress) * 100.0; // map to [20%, 90%]
     tauri_window.emit("event-progress", percent).unwrap();
 }
 
@@ -104,8 +102,11 @@ async fn start_job<R: Runtime>(
         .emit("event-progress", 0.0)
         .map_err(|e| e.to_string())?;
     const EBOOK_CONVERT: &'static str = "ebook-convert";
-    println!("{:?}", payload);
     let book = (&payload).book.as_str();
+    if book.is_empty() {
+        return Err("Empty book path, please select a book.".to_string());
+    }
+
     let book_path = Path::new(book).parent().unwrap().to_str().unwrap();
     let book_name_without_ext = Path::new(book).file_stem().unwrap().to_str().unwrap();
 
@@ -136,7 +137,7 @@ async fn start_job<R: Runtime>(
         (&payload).format
     );
 
-    let html = process(
+    process(
         html_file.as_str(),
         (&payload).language.as_str(),
         (&payload).format.as_str(),
@@ -145,7 +146,7 @@ async fn start_job<R: Runtime>(
         (&payload).hint_level,
         Some(&reporter),
     )?;
-    write_html_content(&html_file, html.as_str())?;
+
     let meta_file = format!("{}/content.opf", book_out_dir);
     run_command(
         EBOOK_CONVERT,
@@ -157,9 +158,6 @@ async fn start_job<R: Runtime>(
             meta_file.as_str(),
         ],
     )?;
-    window
-        .emit("event-progress", 95.0)
-        .map_err(|e| e.to_string())?;
     // remove the temp files and folders
     std::fs::remove_file(book_dump).map_err(|e| e.to_string())?;
     std::fs::remove_dir_all(book_out_dir).map_err(|e| e.to_string())?;

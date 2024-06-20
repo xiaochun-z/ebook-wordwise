@@ -2,9 +2,11 @@ mod annotation;
 pub mod cmd;
 pub mod html;
 pub mod types;
-
 use annotation::{annotate_phrase, load_dict, load_lemma};
-use html::{process_html, read_html_content};
+use html::process_html;
+use std::fs::File;
+use std::io::{BufReader, BufWriter};
+use std::path::Path;
 use tauri::Runtime;
 use types::{ProgressReporter, RubyAnnotator};
 
@@ -16,7 +18,7 @@ pub fn process<R: Runtime>(
     def_len: i32,
     hint_level: i32,
     reporter: Option<&ProgressReporter<R>>,
-) -> Result<String, String> {
+) -> Result<(), String> {
     println!("book format: {}", book_format);
     let lemma = load_lemma().unwrap();
     let annotation_dict = load_dict(language).unwrap();
@@ -38,13 +40,28 @@ pub fn process<R: Runtime>(
         );
         res
     });
+    let f = Path::new(file);
+    let out_file = f.file_stem().unwrap().to_str().unwrap();
+    let out_file_ext = f.extension().unwrap().to_str().unwrap();
+    let out_file = format!(
+        "{}\\{}.out.{}",
+        f.parent().unwrap().to_str().unwrap(),
+        out_file,
+        out_file_ext
+    );
 
     let fn_ptr: &dyn Fn(&str) -> String = process_text_wrapper.as_ref();
 
-    let html_content = read_html_content(file)?;
+    let input = File::open(file).unwrap();
+    let mut reader = BufReader::new(input);
+    let output = File::create(&out_file).unwrap();
+    let mut writer = BufWriter::new(output);
+    process_html(&mut reader, &mut writer, fn_ptr, reporter).map_err(|err| err.to_string())?;
 
-    let html_content = html_content;
-    let new_html_content = process_html(html_content.as_str(), fn_ptr, reporter)?;
-    //println!("new_html_content: {}", new_html_content);
-    Ok(new_html_content)
+    // remove the source file
+    std::fs::remove_file(file).map_err(|err| err.to_string())?;
+    // replace the source file with new file
+    std::fs::rename((&out_file).as_str(), file).map_err(|err| err.to_string())?;
+
+    Ok(())
 }

@@ -105,20 +105,20 @@ pub struct Payload {
 }
 
 pub struct ProgressReporter<'a, R: Runtime> {
-    progress_fn: fn(f32, &tauri::Window<R>),
+    progress_fn: fn(f64, &tauri::Window<R>),
     tauri_window: &'a tauri::Window<R>,
 }
 
 impl<'a, R: Runtime> ProgressReporter<'a, R> {
     
-    pub fn new(tauri_window: &'a tauri::Window<R>, progress_fn: fn(f32, &tauri::Window<R>)) -> Self {
+    pub fn new(tauri_window: &'a tauri::Window<R>, progress_fn: fn(f64, &tauri::Window<R>)) -> Self {
         Self {
             progress_fn,
             tauri_window,
         }
     }
 
-    pub fn report(&self, progress: f32) {
+    pub fn report(&self, progress: f64) {
         (self.progress_fn)(progress, &self.tauri_window);
     }
 }

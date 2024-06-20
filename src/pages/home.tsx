@@ -55,12 +55,14 @@ export default function Home() {
   const [showPhoneme, setShowPhoneme] = useState(false);
   const [progress, setProgress] = useState(0);
   const [working, setWorking] = useState(false);
+  const [selecting, setSelecting] = useState(false);
   const [workmesg, setWorkMesg] = useState<WorkMesg>({
     className: " ",
     text: "",
   });
 
   async function start_job() {
+    setWorkMesg(new WorkMesg(" ", ""));
     setWorking(true);
     await invoke<string>("start_job", {
       payload: {
@@ -83,6 +85,7 @@ export default function Home() {
   }
 
   async function select_book_dialog(): Promise<string> {
+    setSelecting(true);
     return new Promise(async (resolve, reject) => {
       if (window.__TAURI_METADATA__) {
         try {
@@ -91,8 +94,10 @@ export default function Home() {
           });
           setbook(book_path);
           resolve(book_path);
+          setSelecting(false);
         } catch (e) {
           reject(e);
+          setSelecting(false);
         }
       }
     });
@@ -137,7 +142,8 @@ export default function Home() {
             <button
               type="button"
               onClick={select_book_dialog}
-              className="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2"
+              disabled={working || selecting}
+              className="disabled:opacity-50 disabled:cursor-not-allowed text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2"
             >
               Browse...
             </button>
@@ -214,7 +220,7 @@ export default function Home() {
               type="checkbox"
               value=""
               checked={allowLong}
-              onChange={(e) => setAllowLong(!allowLong)}
+              onChange={(_) => setAllowLong(!allowLong)}
               className="sr-only peer"
             />
             <div
@@ -235,7 +241,7 @@ export default function Home() {
               value=""
               className="sr-only peer"
               checked={showPhoneme}
-              onChange={(e) => setShowPhoneme(!showPhoneme)}
+              onChange={(_) => setShowPhoneme(!showPhoneme)}
             />
             <div
               className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4
@@ -254,7 +260,8 @@ export default function Home() {
           <button
             type="button"
             onClick={start_job}
-            className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none
+            disabled={working || selecting}
+            className="disabled:opacity-50 text-white bg-blue-700 hover:bg-blue-800 focus:ring-1 focus:outline-none
              focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex 
              items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
           >

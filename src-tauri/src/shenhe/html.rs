@@ -1,82 +1,123 @@
-use kuchiki::{traits::TendrilSink, NodeRef};
+use super::types::ProgressReporter;
+use std::io::{self, Read, Seek, Write};
 use tauri::Runtime;
 
-use super::types::ProgressReporter;
-
-pub fn process_html<R: Runtime>(
-    input: &str,
+pub fn process_html<R: Read + Seek, W: Write, Rt: Runtime>(
+    reader: &mut R,
+    writer: &mut W,
     process_text_fn: &(dyn Fn(&str) -> String),
-    reporter: Option<&ProgressReporter<R>>,
-) -> Result<String, String> {
-    let document = kuchiki::parse_html().one(input);
+    reporter: Option<&ProgressReporter<Rt>>,
+) -> io::Result<()> {
+    let mut buffer = [0; 1024];
+    let mut inside_body = false;
+    let mut inside_tag = false;
+    let mut text_buffer = String::new();
+    let mut tag_buffer = String::new();
+    let mut incomplete_utf8 = Vec::new();
 
-    let body = document
-        .select_first("body")
-        .map_err(|_| "Failed to select body")?;
+    // get total size of the reader to estimate the progress.
+    let total_size: f64 = reader.seek(io::SeekFrom::End(0))? as f64;
 
-    let total = body.as_node().descendants().count() as f32;
-    let mut i = 0.0;
+    // reset to reader to begining to read
+    reader.seek(io::SeekFrom::Start(0))?;
 
-    // Process each text node incrementally
-    for descendant in body.as_node().descendants() {
-        i += 1.0;
-        if let Some(text_node) = descendant.as_text() {
-            if let Some(r) = reporter {
-                let current_progress = i / total;
-                r.report(current_progress);
-            }
+    let mut current_read: f64 = 0.0;
 
-            let original_text = text_node.borrow().to_string().trim().to_string();
-            if original_text.is_empty() {
+    loop {
+        let bytes_read = reader.read(&mut buffer)?;
+        if bytes_read == 0 {
+            break;
+        }
+
+        current_read += bytes_read as f64;
+        if let Some(reporter) = reporter {
+            let progress = current_read / total_size;
+            //let progress = progress * 0.8 + 0.2;
+            reporter.report(progress);
+        }
+
+        let mut slice = &buffer[..bytes_read];
+        let cl = &incomplete_utf8.clone();
+        // Handle incomplete UTF-8 character from the previous read
+        if !incomplete_utf8.is_empty() {
+            incomplete_utf8.extend_from_slice(slice);
+            if let Ok(valid_str) = std::str::from_utf8(cl) {
+                slice = valid_str.as_bytes();
+                incomplete_utf8.clear();
+            } else {
                 continue;
             }
+        }
 
-            println!("original_text: {}", original_text);
-            let processed_text = process_text_fn(&original_text);
+        // Check if the slice ends with a partial UTF-8 character
+        if !slice.is_empty() {
+            let valid_up_to = match std::str::from_utf8(slice) {
+                Ok(_) => slice.len(),
+                Err(e) => e.valid_up_to(),
+            };
 
-            if processed_text != original_text {
-                if processed_text.contains('<') && processed_text.contains('>') {
-                    // Parse the processed text as HTML fragment
-                    let fragment =
-                        kuchiki::parse_html().one(format!("<div>{}</div>", processed_text));
-                    let fragment_children: Vec<NodeRef> = fragment
-                        .select_first("div")
-                        .unwrap()
-                        .as_node()
-                        .children()
-                        .collect();
+            if valid_up_to < slice.len() {
+                incomplete_utf8.extend_from_slice(&slice[valid_up_to..]);
+                slice = &slice[..valid_up_to];
+            }
+        }
 
-                    for child in fragment_children {
-                        descendant.insert_before(child);
-                    }
-                    //descendant.detach();
-                    *text_node.borrow_mut() = "".to_string();
-                } else {
-                    *text_node.borrow_mut() = processed_text;
+        let text = std::str::from_utf8(slice).expect("Slice should be valid UTF-8");
+
+        for ch in text.chars() {
+            if ch == '<' {
+                inside_tag = true;
+                if !text_buffer.is_empty() && inside_body {
+                    let processed_text = process_text_fn(&text_buffer);
+                    writer.write_all(processed_text.as_bytes())?;
+                    text_buffer.clear();
                 }
+                tag_buffer.push(ch);
+            } else if ch == '>' {
+                inside_tag = false;
+                tag_buffer.push(ch);
+
+                // Check if we are entering or leaving the body tag
+                if tag_buffer.starts_with("<body") {
+                    inside_body = true;
+                } else if tag_buffer.starts_with("</body>") {
+                    inside_body = false;
+                }
+
+                // Write the tag buffer to the output
+                writer.write_all(tag_buffer.as_bytes())?;
+                tag_buffer.clear();
+            } else if inside_tag {
+                tag_buffer.push(ch);
+            } else if inside_body {
+                text_buffer.push(ch);
+            } else {
+                writer.write_all(ch.to_string().as_bytes())?;
             }
         }
     }
-    let mut output = vec![];
-    document
-        .serialize(&mut output)
-        .map_err(|err| err.to_string())?;
-    std::str::from_utf8(&output)
-        .map(|res| res.to_string())
-        .map_err(|err| err.to_string())
+
+    if !text_buffer.is_empty() && inside_body {
+        let processed_text = process_text_fn(&text_buffer);
+        writer.write_all(processed_text.as_bytes())?;
+    }
+
+    writer.flush()?;
+    Ok(())
 }
 
-pub fn read_html_content(path: &str) -> Result<String, String> {
-    std::fs::read_to_string(path).map_err(|err| err.to_string())
-}
+// pub fn read_html_content(path: &str) -> Result<String, String> {
+//     std::fs::read_to_string(path).map_err(|err| err.to_string())
+// }
 
-pub fn write_html_content(path: &str, contents: &str) -> Result<(), String> {
-    std::fs::write(path, contents).map_err(|err| err.to_string())
-}
+// pub fn write_html_content(path: &str, contents: &str) -> Result<(), String> {
+//     std::fs::write(path, contents).map_err(|err| err.to_string())
+// }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::io::Cursor;
     use tauri::Wry;
     #[test]
     fn test_process_html() {
@@ -98,9 +139,13 @@ mod tests {
             ),
         ];
 
-        for (input, output) in data {
-            let processed_html = process_html::<Wry>(input, process_text.as_ref(), None).unwrap();
-            assert_eq!(processed_html, output);
+        for (input, expected) in data {
+            let mut reader = Cursor::new(input);
+            let mut writer = Cursor::new(Vec::new());
+            let reporter: Option<&ProgressReporter<Wry>> = None;
+            process_html(&mut reader, &mut writer, process_text.as_ref(), reporter).unwrap();
+            let output_data = String::from_utf8(writer.into_inner()).unwrap();
+            assert_eq!(output_data, expected);
         }
     }
 }
