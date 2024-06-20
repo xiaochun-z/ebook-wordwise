@@ -8,7 +8,7 @@ pub fn process_html<R: Read + Seek, W: Write, Rt: Runtime>(
     process_text_fn: &(dyn Fn(&str) -> String),
     reporter: Option<&ProgressReporter<Rt>>,
 ) -> io::Result<()> {
-    let mut buffer = [0; 1024];
+    let mut buffer = [0; 102400];
     let mut inside_body = false;
     let mut inside_tag = false;
     let mut text_buffer = String::new();

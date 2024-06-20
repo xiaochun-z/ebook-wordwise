@@ -1,9 +1,9 @@
-use std::io::{self, Write};
-use std::process::Command;
-
-use tauri::Runtime;
-
+// use std::io::{self, Write};
 use super::types::ProgressReporter;
+use std::os::windows::process::CommandExt;
+use std::process::Command;
+use tauri::{Runtime, Wry};
+use winapi::um::winbase::CREATE_NO_WINDOW;
 
 pub fn run_command<R: Runtime>(
     name: &str,
@@ -12,19 +12,20 @@ pub fn run_command<R: Runtime>(
 ) -> Result<String, String> {
     let output = Command::new(name)
         .args(args)
+        .creation_flags(CREATE_NO_WINDOW)
         .output()
         .map_err(|err| format!("{}: {}", name, err))?;
 
     let stdout = String::from_utf8_lossy(&output.stdout).to_string();
     let stderr = String::from_utf8_lossy(&output.stderr).to_string();
 
-    if !stdout.is_empty() {
-        io::stdout().write_all(stdout.as_bytes()).unwrap();
-    }
+    // if !stdout.is_empty() {
+    //     io::stdout().write_all(stdout.as_bytes()).unwrap();
+    // }
 
-    if !stderr.is_empty() {
-        io::stderr().write_all(stderr.as_bytes()).unwrap();
-    }
+    // if !stderr.is_empty() {
+    //     io::stderr().write_all(stderr.as_bytes()).unwrap();
+    // }
 
     if output.status.success() {
         Ok(stdout)
@@ -34,10 +35,8 @@ pub fn run_command<R: Runtime>(
 }
 
 pub fn ebook_convert_exists() -> bool {
-    Command::new("ebook-convert")
-        .arg("--version")
-        .output()
-        .is_ok()
+    let reporter: Option<&ProgressReporter<Wry>> = None;
+    run_command("ebook-convert", reporter, &["--version"]).is_ok()
 }
 
 #[cfg(test)]
