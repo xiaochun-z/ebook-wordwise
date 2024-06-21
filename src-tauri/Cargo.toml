@@ -23,7 +23,3 @@ winapi = { version = "0.3.9", features = ["winbase"] }
 [features]
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!
 custom-protocol = ["tauri/custom-protocol"]
-
-[profile.release.package.wry]
-debug = true
-debug-assertions = true

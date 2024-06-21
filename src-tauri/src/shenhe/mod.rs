@@ -20,8 +20,9 @@ pub fn process<R: Runtime>(
     reporter: Option<&ProgressReporter<R>>,
 ) -> Result<(), String> {
     println!("book format: {}", book_format);
-    let lemma = load_lemma().unwrap();
-    let annotation_dict = load_dict(language).unwrap();
+    let lemma = load_lemma().map_err(|err| format!("lemmatization: {}", err))?;
+    let annotation_dict =
+        load_dict(language).map_err(|err| format!("dictionary-{}: {}", language, err))?;
     let ruby_annotator = RubyAnnotator {};
 
     let process_text_wrapper = Box::new(move |input: &str| {

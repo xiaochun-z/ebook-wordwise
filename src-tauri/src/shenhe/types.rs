@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
-use tauri::Runtime;
 use std::collections::HashSet;
+use tauri::Runtime;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct DictRecord {
@@ -110,8 +110,10 @@ pub struct ProgressReporter<'a, R: Runtime> {
 }
 
 impl<'a, R: Runtime> ProgressReporter<'a, R> {
-    
-    pub fn new(tauri_window: &'a tauri::Window<R>, progress_fn: fn(f64, &tauri::Window<R>)) -> Self {
+    pub fn new(
+        tauri_window: &'a tauri::Window<R>,
+        progress_fn: fn(f64, &tauri::Window<R>),
+    ) -> Self {
         Self {
             progress_fn,
             tauri_window,

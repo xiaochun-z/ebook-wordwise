@@ -37,7 +37,6 @@ export default function Home() {
       }
     });
   }
-  
 
   useEffect(() => {
     check_ebook_convert();
@@ -105,12 +104,32 @@ export default function Home() {
 
   const supported_languages = [
     { value: "en", text: "English" },
-    { value: "cn", text: "Chinese" },
+    { value: "cn", text: "中文" },
+    { value: "jp", text: "日本語" },
+    { value: "ko", text: "한국인" },
+    { value: "vi", text: "Tiếng Việt" },
+    { value: "ar", text: "عربي" },
+    { value: "de", text: "Deutsch" },
+    { value: "es", text: "Española" },
+    { value: "fr", text: "Français" },
+    { value: "hi", text: "टर्की" },
+    { value: "pt", text: "Português" },
+    { value: "ru", text: "Русский" },
+    { value: "th", text: "แบบไทย" },
+    { value: "ua", text: "українська" },
   ];
   const supported_formats = [
     { value: "epub", text: "epub" },
     { value: "mobi", text: "mobi" },
     { value: "pdf", text: "pdf" },
+    { value: "azw3", text: "azw3" },
+    { value: "fb2", text: "fb2" },
+    { value: "txt", text: "txt" },
+    { value: "docx", text: "docx" },
+    { value: "rb", text: "rb" },
+    { value: "rtf", text: "rtf" },
+    { value: "snb", text: "snb" },
+    { value: "tcr", text: "tcr" },
   ];
   return (
     <Fragment>
