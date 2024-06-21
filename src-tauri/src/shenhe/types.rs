@@ -106,7 +106,7 @@ pub struct Payload {
 
 pub struct ProgressReporter<'a, R: Runtime> {
     progress_fn: fn(f64, &tauri::Window<R>),
-    tauri_window: &'a tauri::Window<R>,
+    pub tauri_window: &'a tauri::Window<R>,
 }
 
 impl<'a, R: Runtime> ProgressReporter<'a, R> {
@@ -122,5 +122,16 @@ impl<'a, R: Runtime> ProgressReporter<'a, R> {
 
     pub fn report(&self, progress: f64) {
         (self.progress_fn)(progress, &self.tauri_window);
+    }
+}
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct WorkMesg<'a> {
+    pub class_name: &'a str,
+    pub text: &'a str,
+}
+
+impl<'a> WorkMesg<'a> {
+    pub fn new(class_name: &'a str, text: &'a str) -> Self {
+        Self { class_name, text }
     }
 }

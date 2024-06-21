@@ -8,7 +8,7 @@ use std::fs::File;
 use std::io::{BufReader, BufWriter};
 use std::path::Path;
 use tauri::Runtime;
-use types::{ProgressReporter, RubyAnnotator};
+use types::{ProgressReporter, RubyAnnotator, WorkMesg};
 
 pub fn process<R: Runtime>(
     file: &str,
@@ -20,6 +20,15 @@ pub fn process<R: Runtime>(
     reporter: Option<&ProgressReporter<R>>,
 ) -> Result<(), String> {
     println!("book format: {}", book_format);
+    if let Some(reporter) = reporter {
+        reporter
+            .tauri_window
+            .emit(
+                "event-workmesg",
+                WorkMesg::new("text-green-800 dark:text-green-300", ""),
+            )
+            .map_err(|e| e.to_string())?;
+    }
     let lemma = load_lemma().map_err(|err| format!("lemmatization: {}", err))?;
     let annotation_dict =
         load_dict(language).map_err(|err| format!("dictionary-{}: {}", language, err))?;

@@ -9,10 +9,10 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 class WorkMesg {
-  className: string;
+  class_name: string;
   text: string;
   constructor(className: string, text: string) {
-    this.className = className;
+    this.class_name = className;
     this.text = text;
   }
 }
@@ -44,6 +44,9 @@ export default function Home() {
       listen<number>("event-progress", (event) => {
         setProgress(event.payload);
       });
+      listen<WorkMesg>("event-workmesg", (event) => {
+        setWorkMesg(event.payload);
+      });
     }
   }, []);
   const [book, setbook] = useState("");
@@ -56,7 +59,7 @@ export default function Home() {
   const [working, setWorking] = useState(false);
   const [selecting, setSelecting] = useState(false);
   const [workmesg, setWorkMesg] = useState<WorkMesg>({
-    className: " ",
+    class_name: " ",
     text: "",
   });
 
@@ -294,7 +297,7 @@ export default function Home() {
             Process
           </button>
           <div className="flex items-center">
-            <div id="message" className={`line-clamp-2 ${workmesg.className}`}>
+            <div id="message" className={`line-clamp-2 ${workmesg.class_name}`}>
               {workmesg.text}
             </div>
           </div>
