@@ -176,7 +176,7 @@ export default function Home() {
             htmlFor="format-select"
             className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
           >
-            Select Output Format
+            Output Format
           </label>
           <select
             id="format-select"
@@ -199,7 +199,7 @@ export default function Home() {
             htmlFor="language-select"
             className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
           >
-            Select Language
+            Wordwise Language
           </label>
           <select
             id="language-select"

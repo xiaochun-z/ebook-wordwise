@@ -2,6 +2,7 @@ import { Fragment, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHome, faMoon, faLightbulb } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
+import About from "./about";
 
 function Menu() {
   function changeTheme() {
@@ -24,7 +25,7 @@ function Menu() {
             id: 1,
             href: "/",
             icon: () => faHome,
-            clickHandler: () => {},
+            clickHandler: () => { },
           },
           {
             id: 2,
@@ -33,7 +34,7 @@ function Menu() {
             clickHandler: () => {
               changeTheme();
             },
-          },
+          }
         ].map(({ id, href, icon, clickHandler }) => (
           <li
             key={id}
@@ -42,6 +43,7 @@ function Menu() {
             <Link
               to={href}
               className="flex flex-col items-center justify-center w-9 h-9"
+              data-modal-target="default-modal" data-modal-toggle="default-modal"
               onClick={clickHandler}
             >
               <FontAwesomeIcon
@@ -51,6 +53,7 @@ function Menu() {
             </Link>
           </li>
         ))}
+        <About />
       </ul>
     </Fragment>
   );
