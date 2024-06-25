@@ -8,8 +8,7 @@ mod shenhe;
 use shenhe::{
     cmd::{ebook_convert_exists, run_command},
     process,
-    types::Payload,
-    types::ProgressReporter,
+    types::{Payload, ProgressReporter, WorkMesg},
 };
 use std::path::Path;
 use tauri::{api::dialog::FileDialogBuilder, Builder, Runtime};
@@ -77,7 +76,7 @@ async fn open_file_dialog(initial_path: String) -> Result<String, String> {
     rx.await.unwrap()
 }
 
-fn progress_fn<R: Runtime>(progress: f64, tauri_window: &tauri::Window<R>) {
+fn progress_fn<R: Runtime>(progress: f32, tauri_window: &tauri::Window<R>) {
     let percent = (0.2 + (0.9 - 0.2) * progress) * 100.0; // map to [20%, 90%]
     tauri_window.emit("event-progress", percent).unwrap();
 }
@@ -116,6 +115,16 @@ async fn start_job<R: Runtime>(
     let book_dump = format!("{}/{}.htmlz", book_path, book_name_without_ext);
     let reporter = ProgressReporter::new(&window, progress_fn);
 
+    window
+        .emit(
+            "event-workmesg",
+            WorkMesg::new(
+                "text-green-800 dark:text-green-300",
+                r#"Awaiting Calibre's "ebook-convert" to convert ebook to HTML."#,
+            ),
+        )
+        .map_err(|e| e.to_string())?;
+
     run_command(EBOOK_CONVERT, Some(&reporter), &[book, book_dump.as_str()])?;
     window
         .emit("event-progress", 10.0)
@@ -146,7 +155,15 @@ async fn start_job<R: Runtime>(
         (&payload).hint_level,
         Some(&reporter),
     )?;
-
+    window
+        .emit(
+            "event-workmesg",
+            WorkMesg::new(
+                "text-green-800 dark:text-green-300",
+                r#"Awaiting Calibre's "ebook-convert" to convert HTML back to ebook."#,
+            ),
+        )
+        .map_err(|e| e.to_string())?;
     let meta_file = format!("{}/content.opf", book_out_dir);
     run_command(
         EBOOK_CONVERT,

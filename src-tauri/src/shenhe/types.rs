@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use tauri::Runtime;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -94,6 +94,27 @@ impl Annotator for RubyAnnotator {
     }
 }
 
+pub struct RedAnnotator {}
+
+impl Annotator for RedAnnotator {
+    fn annotate(
+        &self,
+        _dr: &DictRecord,
+        target: &str,
+        _def_length: i32,
+        _including_phoneme: bool,
+    ) -> String {
+        let (clean_word, prefix, suffix) = Cleaner::clean_word(target, false);
+        let update = format!(
+            "{}<span style='color:red'>{}</span>{}",
+            prefix,
+            clean_word,
+            suffix
+        );
+        target.replace(target, &update)
+    }
+}
+
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct Payload {
     pub book: String,
@@ -105,14 +126,14 @@ pub struct Payload {
 }
 
 pub struct ProgressReporter<'a, R: Runtime> {
-    progress_fn: fn(f64, &tauri::Window<R>),
+    progress_fn: fn(f32, &tauri::Window<R>),
     pub tauri_window: &'a tauri::Window<R>,
 }
 
 impl<'a, R: Runtime> ProgressReporter<'a, R> {
     pub fn new(
         tauri_window: &'a tauri::Window<R>,
-        progress_fn: fn(f64, &tauri::Window<R>),
+        progress_fn: fn(f32, &tauri::Window<R>),
     ) -> Self {
         Self {
             progress_fn,
@@ -120,7 +141,7 @@ impl<'a, R: Runtime> ProgressReporter<'a, R> {
         }
     }
 
-    pub fn report(&self, progress: f64) {
+    pub fn report(&self, progress: f32) {
         (self.progress_fn)(progress, &self.tauri_window);
     }
 }
@@ -135,3 +156,13 @@ impl<'a> WorkMesg<'a> {
         Self { class_name, text }
     }
 }
+
+pub struct ChunkParameter<'a, 'b> {
+    pub format: &'b str,
+    pub dict: &'a HashMap<String, DictRecord>,
+    pub lemma: &'a HashMap<String, String>,
+    pub def_length: i32,
+    pub including_phoneme: bool,
+    pub hint_level: i32,
+}
+pub type ProcessChunkFn = fn(input: &str, param: &ChunkParameter) -> String;

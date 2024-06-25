@@ -141,6 +141,12 @@ pub fn annotate_phrase(
         }
     }
 
+    if sentence.ends_with(' ') {
+        // put whitespace back.
+        let mut res =  result.trim_end().to_string();
+        res.push(' ');
+        return res;
+    }
     result.trim_end().to_string()
 }
 
