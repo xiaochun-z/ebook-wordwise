@@ -13,36 +13,35 @@ pub struct DictRecord {
 }
 
 impl DictRecord {
-    pub fn get_meaning(&self, def_length: i32, including_phoneme: bool) -> String {
+    pub fn get_meaning(
+        &self,
+        def_length: i32,
+        user_hint_lvl: i32,
+        user_show_phoneme: bool,
+    ) -> String {
         let mut definition = String::new();
-
-        if including_phoneme && !self.phoneme.is_empty() {
+        if (user_hint_lvl == 0 || user_hint_lvl >= self.hint_lvl)
+            && user_show_phoneme
+            && !self.phoneme.is_empty()
+        {
             definition += &self.phoneme;
         }
 
-        if def_length == 1 {
-            definition += &format!(" {}", self.short_def);
-        } else if def_length == 2 {
-            definition += &format!(" {}", self.full_def);
+        if user_hint_lvl >= self.hint_lvl {
+            if def_length == 1 {
+                definition += &format!(" {}", self.short_def);
+            } else if def_length == 2 {
+                definition += &format!(" {}", self.full_def);
+            }
         }
 
         definition.trim().to_string()
     }
 }
 
-pub trait Annotator {
-    fn annotate(
-        &self,
-        dr: &DictRecord,
-        target: &str,
-        def_length: i32,
-        including_phoneme: bool,
-    ) -> String;
-}
 pub trait Clean {
     fn clean_word(word: &str, lowercase: bool) -> (String, String, String);
 }
-pub struct RubyAnnotator {}
 pub struct Cleaner {}
 impl Clean for Cleaner {
     fn clean_word(word: &str, lowercase: bool) -> (String, String, String) {
@@ -74,44 +73,56 @@ impl Clean for Cleaner {
         }
     }
 }
-impl Annotator for RubyAnnotator {
-    fn annotate(
-        &self,
-        dr: &DictRecord,
-        target: &str,
-        def_length: i32,
-        including_phoneme: bool,
-    ) -> String {
-        let (clean_word, prefix, suffix) = Cleaner::clean_word(target, false);
-        let update = format!(
-            "{}<ruby>{}<rt>{}</rt></ruby>{}",
-            prefix,
-            clean_word,
-            dr.get_meaning(def_length, including_phoneme),
-            suffix
-        );
-        target.replace(target, &update)
-    }
+
+pub enum Annotator<'a> {
+    RubyAnnotator(i32, bool),
+    ColorAnnotator(&'a str, i32, bool),
+    InlineAnnotator(i32, bool),
 }
 
-pub struct RedAnnotator {}
+pub fn annotate_text(
+    annotator: &Annotator,
+    dr: &DictRecord,
+    target: &str,
+    def_length: i32,
+) -> String {
+    match annotator {
+        Annotator::RubyAnnotator(hint_lvl, phoneme) => {
+            let (clean_word, prefix, suffix) = Cleaner::clean_word(target, false);
+            let meaning = dr.get_meaning(def_length, *hint_lvl, *phoneme);
+            if meaning.len() > 0 {
+                let update = format!(
+                    "{}<ruby>{}<rt>{}</rt></ruby>{}",
+                    prefix, clean_word, meaning, suffix
+                );
+                return target.replace(target, &update);
+            }
 
-impl Annotator for RedAnnotator {
-    fn annotate(
-        &self,
-        _dr: &DictRecord,
-        target: &str,
-        _def_length: i32,
-        _including_phoneme: bool,
-    ) -> String {
-        let (clean_word, prefix, suffix) = Cleaner::clean_word(target, false);
-        let update = format!(
-            "{}<span style='color:red'>{}</span>{}",
-            prefix,
-            clean_word,
-            suffix
-        );
-        target.replace(target, &update)
+            target.to_string()
+        }
+        Annotator::ColorAnnotator(color, _hint_lvl, _phoneme) => {
+            let (clean_word, prefix, suffix) = Cleaner::clean_word(target, false);
+            if clean_word.len() > 0 {
+                let update = format!(
+                    "{}<span style='color:{color}'>{}</span>{}",
+                    prefix, clean_word, suffix
+                );
+                return target.replace(target, &update);
+            }
+            target.to_string()
+        }
+        Annotator::InlineAnnotator(hint_lvl, phoneme) => {
+            let (clean_word, prefix, suffix) = Cleaner::clean_word(target, false);
+            let meaning = dr.get_meaning(def_length, *hint_lvl, *phoneme);
+            if meaning.len() > 0 {
+                let update = format!(
+                    "{}{}<span style='font-size:smaller;color:gray'> [{}]</span>{}",
+                    prefix, clean_word, meaning, suffix
+                );
+                return target.replace(target, &update);
+            }
+            target.to_string()
+        }
     }
 }
 

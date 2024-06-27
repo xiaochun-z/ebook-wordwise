@@ -1,5 +1,5 @@
 use super::annotation::annotate_phrase;
-use super::types::{ChunkParameter, ProcessChunkFn, ProgressReporter, RubyAnnotator};
+use super::types::{Annotator, ChunkParameter, ProcessChunkFn, ProgressReporter};
 use rayon::prelude::*;
 use std::io::{Read, Seek, SeekFrom, Write};
 use std::sync::{
@@ -51,16 +51,13 @@ pub fn process_text_fn(input: &str, param: &ChunkParameter) -> String {
     if input.trim().is_empty() {
         return input.to_string();
     }
-    let annotator = RubyAnnotator {};
 
     let res = annotate_phrase(
-        &annotator,
+        &Annotator::InlineAnnotator(param.hint_level, param.including_phoneme),
         input,
         param.dict,
         param.lemma,
         param.def_length,
-        param.including_phoneme,
-        param.hint_level,
     );
     res
 }

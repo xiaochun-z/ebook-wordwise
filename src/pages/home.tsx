@@ -222,12 +222,12 @@ export default function Home() {
             htmlFor="minmax-range"
             className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
           >
-            Hint Level
+            Hint Level (Drag to Left means less hints, right side for more hints)
           </label>
           <input
             id="minmax-range"
             type="range"
-            min="1"
+            min="0"
             max="5"
             step="1"
             value={hintLevel}
