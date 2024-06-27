@@ -134,6 +134,7 @@ pub struct Payload {
     pub hint_level: i32,
     pub allow_long: bool,
     pub show_phoneme: bool,
+    pub wordwise_style: i32,
 }
 
 pub struct ProgressReporter<'a, R: Runtime> {
@@ -168,12 +169,13 @@ impl<'a> WorkMesg<'a> {
     }
 }
 
-pub struct ChunkParameter<'a, 'b> {
-    pub format: &'b str,
+pub struct ChunkParameter<'a> {
+    pub format: &'a str,
     pub dict: &'a HashMap<String, DictRecord>,
     pub lemma: &'a HashMap<String, String>,
     pub def_length: i32,
     pub including_phoneme: bool,
     pub hint_level: i32,
+    pub annotator: &'a Annotator<'a>,
 }
 pub type ProcessChunkFn = fn(input: &str, param: &ChunkParameter) -> String;

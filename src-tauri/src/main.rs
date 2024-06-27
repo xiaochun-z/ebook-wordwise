@@ -153,6 +153,7 @@ async fn start_job<R: Runtime>(
         (&payload).show_phoneme,
         if (&payload).allow_long { 2 } else { 1 },
         (&payload).hint_level,
+        (&payload).wordwise_style,
         Some(&reporter),
     )?;
     window

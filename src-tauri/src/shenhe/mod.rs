@@ -8,7 +8,7 @@ use std::fs::File;
 use std::io::{BufReader, BufWriter};
 use std::path::Path;
 use tauri::Runtime;
-use types::{ChunkParameter, ProgressReporter, WorkMesg};
+use types::{Annotator, ChunkParameter, ProgressReporter, WorkMesg};
 
 pub fn process<R: Runtime>(
     file: &str,
@@ -17,11 +17,19 @@ pub fn process<R: Runtime>(
     include_phoneme: bool,
     def_len: i32,
     hint_level: i32,
+    wordwise_style: i32,
     reporter: Option<&ProgressReporter<R>>,
 ) -> Result<(), String> {
     //println!("book format: {}", book_format);
     let lemma = load_lemma().map_err(|err| format!("lemmatization: {}", err))?;
     let dict = load_dict(language).map_err(|err| format!("dictionary-{}: {}", language, err))?;
+    let annotator = match wordwise_style {
+        0 => Annotator::InlineAnnotator(hint_level, include_phoneme),
+        1 => Annotator::RubyAnnotator(hint_level, include_phoneme),
+        2 => Annotator::ColorAnnotator("red", hint_level, include_phoneme),
+        _ => Annotator::InlineAnnotator(hint_level, include_phoneme),
+    };
+
     let param: ChunkParameter = ChunkParameter {
         format: book_format,
         dict: &dict,
@@ -29,6 +37,7 @@ pub fn process<R: Runtime>(
         def_length: def_len,
         including_phoneme: include_phoneme,
         hint_level,
+        annotator: &annotator,
     };
 
     let f = Path::new(file);

@@ -1,5 +1,5 @@
 use super::annotation::annotate_phrase;
-use super::types::{Annotator, ChunkParameter, ProcessChunkFn, ProgressReporter};
+use super::types::{ChunkParameter, ProcessChunkFn, ProgressReporter};
 use rayon::prelude::*;
 use std::io::{Read, Seek, SeekFrom, Write};
 use std::sync::{
@@ -53,7 +53,7 @@ pub fn process_text_fn(input: &str, param: &ChunkParameter) -> String {
     }
 
     let res = annotate_phrase(
-        &Annotator::InlineAnnotator(param.hint_level, param.including_phoneme),
+        param.annotator,
         input,
         param.dict,
         param.lemma,
@@ -264,7 +264,7 @@ fn chunk_end_with(chunk: &[u8], str: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::super::types::{DictRecord, ProgressReporter};
+    use super::super::types::{Annotator, DictRecord, ProgressReporter};
     use super::{process_html, ChunkParameter};
     use std::collections::HashMap;
     use std::io::Cursor;
@@ -313,7 +313,7 @@ mod tests {
             hint_lvl: 3,
         };
         dict.insert("world".to_string(), dr);
-
+        let annotator = Annotator::InlineAnnotator(3, false);
         let param: ChunkParameter = ChunkParameter {
             format: "epub",
             dict: &dict,
@@ -321,6 +321,7 @@ mod tests {
             def_length: 1,
             including_phoneme: false,
             hint_level: 3,
+            annotator: &annotator,
         };
 
         for (input, expected) in data {

@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 //import { appWindow } from "@tauri-apps/api/window";
 import { invoke } from "@tauri-apps/api/tauri";
 import { listen } from "@tauri-apps/api/event";
+import SelectInput from '../components/selectInput';
 import {
   faFolderOpen,
   faArrowsRotate,
@@ -52,6 +53,7 @@ export default function Home() {
   const [book, setbook] = useState("");
   const [format, setFormat] = useState("epub");
   const [language, setLanguage] = useState("en");
+  const [wordwiseStyle, setWordwiseStyle] = useState(0);
   const [hintLevel, setHintLevel] = useState("3");
   const [allowLong, setAllowLong] = useState(false);
   const [showPhoneme, setShowPhoneme] = useState(false);
@@ -74,6 +76,7 @@ export default function Home() {
         hint_level: parseInt(hintLevel),
         allow_long: Boolean(allowLong),
         show_phoneme: Boolean(showPhoneme),
+        wordwise_style: wordwiseStyle,
       },
     })
       .then((result) => {
@@ -127,12 +130,20 @@ export default function Home() {
     { value: "pdf", text: "pdf" },
     { value: "azw3", text: "azw3" },
     { value: "fb2", text: "fb2" },
-    { value: "txt", text: "txt" },
     { value: "docx", text: "docx" },
     { value: "rb", text: "rb" },
     { value: "rtf", text: "rtf" },
     { value: "snb", text: "snb" },
     { value: "tcr", text: "tcr" },
+  ];
+  const supported_styles = [
+    { value: 0, text: "Inline" },
+    { value: 1, text: "On top" },
+  ];
+
+  const select_options = [{ id: "format-select", label: "Output Format", value: format, options: supported_formats, onChange: (e: React.ChangeEvent<HTMLSelectElement>) => setFormat(e.target.value) },
+  { id: "language-select", label: "Wordwise Language", value: language, options: supported_languages, onChange: (e: React.ChangeEvent<HTMLSelectElement>) => setLanguage(e.target.value) },
+  { id: "style-select", label: "Wordwise Style", value: wordwiseStyle, options: supported_styles, onChange: (e: React.ChangeEvent<HTMLSelectElement>) => setWordwiseStyle(parseInt(e.target.value)) },
   ];
   return (
     <Fragment>
@@ -171,51 +182,17 @@ export default function Home() {
             </button>
           </div>
         </div>
-        <div>
-          <label
-            htmlFor="format-select"
-            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-          >
-            Output Format
-          </label>
-          <select
-            id="format-select"
-            value={format}
-            onChange={(e) => setFormat(e.target.value)}
-            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg
-             focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700
-              dark:border-gray-600 dark:placeholder-gray-400 dark:text-white
-               dark:focus:ring-blue-500 dark:focus:border-blue-500"
-          >
-            {supported_formats.map(({ value, text }) => (
-              <option key={value} value={value}>
-                {text}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label
-            htmlFor="language-select"
-            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-          >
-            Wordwise Language
-          </label>
-          <select
-            id="language-select"
-            value={language}
-            onChange={(e) => setLanguage(e.target.value)}
-            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm 
-            rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5
-             dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400
-              dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-          >
-            {supported_languages.map(({ value, text }) => (
-              <option key={value} value={value}>
-                {text}
-              </option>
-            ))}
-          </select>
+        <div className="flex flex-row gap-x-5">
+          {select_options.map(({ id, label, value, options, onChange }) => (
+            <SelectInput
+              id={id}
+              key={id}
+              label={label}
+              value={value}
+              options={options}
+              onChange={onChange}
+            />
+          ))}
         </div>
         <div>
           <label
