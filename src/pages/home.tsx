@@ -1,9 +1,10 @@
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useState, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 //import { appWindow } from "@tauri-apps/api/window";
 import { invoke } from "@tauri-apps/api/tauri";
 import { listen } from "@tauri-apps/api/event";
-import SelectInput from '../components/selectInput';
+import SelectInput from "../components/selectInput";
+import Preview from "../components/Preview";
 import {
   faFolderOpen,
   faArrowsRotate,
@@ -41,6 +42,7 @@ export default function Home() {
 
   useEffect(() => {
     check_ebook_convert();
+    notify("", "");
     if (window.__TAURI_METADATA__) {
       listen<number>("event-progress", (event) => {
         setProgress(event.payload);
@@ -50,13 +52,87 @@ export default function Home() {
       });
     }
   }, []);
+
+  // This is your notify function that you want to call
+  async function notify(stateName: string, value: any) {
+    //console.log(`State ${stateName} has been set to`, value);
+    switch (stateName) {
+      case "book":
+        preview_payload.book = value;
+        break;
+      case "format":
+        preview_payload.format = value;
+        break;
+      case "language":
+        preview_payload.language = value;
+        break;
+      case "wordwiseStyle":
+        preview_payload.wordwise_style = value;
+        break;
+      case "hintLevel":
+        preview_payload.hint_level = value;
+        break;
+      case "allowLong":
+        preview_payload.allow_long = value;
+        break;
+      case "showPhoneme":
+        preview_payload.show_phoneme = value;
+        break;
+    }
+
+    //console.log(preview_payload);
+    await invoke<string>("preview", {
+      payload: preview_payload,
+      original: default_preview,
+    }).then((res) => {
+      //console.log(res);
+      setPreview(res);
+    });
+  }
+
+  function useNotifyingState<T>(
+    initialValue: T,
+    stateName: string
+  ): [T, (newValue: T) => void] {
+    const [value, setValue] = useState(initialValue);
+
+    const setValueAndNotify = useCallback(
+      (newValue: T) => {
+        setValue(newValue);
+        notify(stateName, newValue);
+      },
+      [stateName]
+    );
+
+    return [value, setValueAndNotify];
+  }
+
   const [book, setbook] = useState("");
-  const [format, setFormat] = useState("epub");
-  const [language, setLanguage] = useState("en");
-  const [wordwiseStyle, setWordwiseStyle] = useState(0);
-  const [hintLevel, setHintLevel] = useState("3");
-  const [allowLong, setAllowLong] = useState(false);
-  const [showPhoneme, setShowPhoneme] = useState(false);
+
+  const [format, setFormat] = useNotifyingState("epub", "format");
+  const [language, setLanguage] = useNotifyingState("en", "language");
+  const [wordwiseStyle, setWordwiseStyle] = useNotifyingState(
+    0,
+    "wordwiseStyle"
+  );
+  const [hintLevel, setHintLevel] = useNotifyingState(3, "hintLevel");
+  const [allowLong, setAllowLong] = useNotifyingState(false, "allowLong");
+  const [showPhoneme, setShowPhoneme] = useNotifyingState(false, "showPhoneme");
+
+  let preview_payload = {
+    book: book,
+    format: format,
+    language: language,
+    hint_level: hintLevel,
+    allow_long: allowLong,
+    show_phoneme: showPhoneme,
+    wordwise_style: wordwiseStyle,
+  };
+
+  const default_preview: string =
+    "<p>This is a preview for the converted book as a FYI.</p><p>In a verdant field near the airfield, an unexpected abduction took place, just as a capsule containing a rare type of pepper, crucial to the study of sea power, was being transported.</p>";
+
+  const [preview, setPreview] = useState(default_preview);
   const [progress, setProgress] = useState(0);
   const [working, setWorking] = useState(false);
   const [selecting, setSelecting] = useState(false);
@@ -73,9 +149,9 @@ export default function Home() {
         book: book,
         format: format,
         language: language,
-        hint_level: parseInt(hintLevel),
-        allow_long: Boolean(allowLong),
-        show_phoneme: Boolean(showPhoneme),
+        hint_level: hintLevel,
+        allow_long: allowLong,
+        show_phoneme: showPhoneme,
         wordwise_style: wordwiseStyle,
       },
     })
@@ -141,13 +217,36 @@ export default function Home() {
     { value: 1, text: "On top" },
   ];
 
-  const select_options = [{ id: "format-select", label: "Output Format", value: format, options: supported_formats, onChange: (e: React.ChangeEvent<HTMLSelectElement>) => setFormat(e.target.value) },
-  { id: "language-select", label: "Wordwise Language", value: language, options: supported_languages, onChange: (e: React.ChangeEvent<HTMLSelectElement>) => setLanguage(e.target.value) },
-  { id: "style-select", label: "Wordwise Style", value: wordwiseStyle, options: supported_styles, onChange: (e: React.ChangeEvent<HTMLSelectElement>) => setWordwiseStyle(parseInt(e.target.value)) },
+  const select_options = [
+    {
+      id: "format-select",
+      label: "Output Format",
+      value: format,
+      options: supported_formats,
+      onChange: (e: React.ChangeEvent<HTMLSelectElement>) =>
+        setFormat(e.target.value),
+    },
+    {
+      id: "language-select",
+      label: "Wordwise Language",
+      value: language,
+      options: supported_languages,
+      onChange: (e: React.ChangeEvent<HTMLSelectElement>) =>
+        setLanguage(e.target.value),
+    },
+    {
+      id: "style-select",
+      label: "Wordwise Style",
+      value: wordwiseStyle,
+      options: supported_styles,
+      onChange: (e: React.ChangeEvent<HTMLSelectElement>) =>
+        setWordwiseStyle(parseInt(e.target.value)),
+    },
   ];
+
   return (
     <Fragment>
-      <div className="columns-1 w-full p-10 space-y-4">
+      <div className="columns-1 w-full px-3 pt-6 space-y-2">
         <div>
           <label
             htmlFor="book-location-icon"
@@ -199,7 +298,8 @@ export default function Home() {
             htmlFor="minmax-range"
             className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
           >
-            Hint Level (Drag to Left means less hints, right side for more hints)
+            Hint Level (Drag to Left means less hints, right side for more
+            hints)
           </label>
           <input
             id="minmax-range"
@@ -210,7 +310,7 @@ export default function Home() {
             value={hintLevel}
             className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
             disabled={false}
-            onChange={(e) => setHintLevel(e.target.value)}
+            onChange={(e) => setHintLevel(parseInt(e.target.value))}
           />
         </div>
         <div className="flex flex-row space-x-5">
@@ -279,13 +379,16 @@ export default function Home() {
             </div>
           </div>
         </div>
-        <div className="pt-5">
+        <div className="pt-1">
           <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4 dark:bg-gray-700">
             <div
               className="bg-blue-700 dark:bg-blue-600 h-2.5 rounded-full"
               style={{ width: `${progress}%` }}
             ></div>
           </div>
+        </div>
+        <div>
+            <Preview innerHTML={preview} />
         </div>
       </div>
     </Fragment>

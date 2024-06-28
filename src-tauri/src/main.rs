@@ -6,9 +6,11 @@ use serde::Deserialize;
 //use tauri::{Event, Manager, Runtime};
 mod shenhe;
 use shenhe::{
+    annotation::{load_dict, load_lemma},
     cmd::{ebook_convert_exists, run_command},
+    html::{self, process_text},
     process,
-    types::{Payload, ProgressReporter, WorkMesg},
+    types::{Annotator, ChunkParameter, Payload, ProgressReporter, WorkMesg},
 };
 use std::path::Path;
 use tauri::{api::dialog::FileDialogBuilder, Builder, Runtime};
@@ -90,6 +92,35 @@ fn progress_fn<R: Runtime>(progress: f32, tauri_window: &tauri::Window<R>) {
 fn check_ebook_convert() -> Result<bool, String> {
     let exists = ebook_convert_exists();
     Ok(exists)
+}
+
+#[tauri::command]
+fn preview(payload: Payload, original: &str) -> String {
+    //println!("payload: {:?}", payload);
+    let lemma = load_lemma().unwrap();
+    let dict = load_dict(payload.language.as_str()).unwrap();
+    let annotator = match payload.wordwise_style {
+        0 => Annotator::InlineAnnotator(payload.hint_level, payload.show_phoneme),
+        1 => Annotator::RubyAnnotator(payload.hint_level, payload.show_phoneme),
+        2 => Annotator::ColorAnnotator("red", payload.hint_level, payload.show_phoneme),
+        _ => Annotator::InlineAnnotator(payload.hint_level, payload.show_phoneme),
+    };
+
+    let def_len = match payload.allow_long {
+        false => 1,
+        true => 2,
+    };
+    let param: ChunkParameter = ChunkParameter {
+        format: &payload.format,
+        dict: &dict,
+        lemma: &lemma,
+        def_length: def_len,
+        including_phoneme: payload.show_phoneme,
+        hint_level: payload.hint_level,
+        annotator: &annotator,
+    };
+
+    process_text(original, &param, html::process_text_fn)
 }
 
 #[tauri::command]
@@ -202,6 +233,7 @@ fn main() {
             open_file_dialog,
             start_job,
             check_ebook_convert,
+            preview,
         ])
         // .setup(|app| {
         //let main_window = app.get_window("main").unwrap();

@@ -191,7 +191,7 @@ fn split_chunk(buffer: &[u8], max_size: usize) -> Vec<String> {
     chunks
 }
 
-fn process_text(html: &str, param: &ChunkParameter, process_fn: ProcessChunkFn) -> String {
+pub fn process_text(html: &str, param: &ChunkParameter, process_fn: ProcessChunkFn) -> String {
     if html.is_empty() {
         return html.to_string();
     }

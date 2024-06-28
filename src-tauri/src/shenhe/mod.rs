@@ -1,4 +1,4 @@
-mod annotation;
+pub mod annotation;
 pub mod cmd;
 pub mod html;
 pub mod types;
