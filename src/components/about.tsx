@@ -31,6 +31,7 @@ export default function About() {
                         <p className="text-base leading-relaxed text-gray-500 dark:text-gray-400">
                             If you have questions for using this app, please consider using this <Link className="text-blue-700 hover:text-blue-900 dark:text-red-300 dark:hover:text-red-100 hover:underline" to="https://github.com/xiaochun-z/rust-wordwise/wiki" target="_blank">Wiki Page</Link>.
                         </p>
+                        <p className="text-base leading-relaxed text-gray-500 dark:text-gray-400">My family and I currently reside in China and are actively searching for new opportunities abroad. If you are interested in offering assistance, kindly reach out to me at <Link className="text-blue-700 hover:text-blue-900 dark:text-red-300 dark:hover:text-red-100 hover:underline" to="mailto:xiaochun.zh@outlook.com">xiaochun.zh@outlook.com</Link>. Thank you.</p>
                     </div>
                 </Modal.Body>
                 <Modal.Footer>

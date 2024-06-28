@@ -80,6 +80,22 @@ export default function Home() {
         break;
     }
 
+    if ((preview_payload.format == "mobi" || preview_payload.format == "azw3") && preview_payload.wordwise_style == 1) {
+      setWorkMesg(
+        new WorkMesg(
+          "text-red-600 dark:text-red-500",
+          "Warning: Amazon Kindle probably does not support the `On top` style. "
+        )
+      );
+    }
+    else {
+      setWorkMesg(
+        new WorkMesg(
+          "text-red-800 dark:text-red-300",
+          ""
+        )
+      );
+    }
     //console.log(preview_payload);
     await invoke<string>("preview", {
       payload: preview_payload,
@@ -130,7 +146,7 @@ export default function Home() {
   };
 
   const default_preview: string =
-    "<p>This is a preview for the converted book as a FYI.</p><p>In a verdant field near the airfield, an unexpected abduction took place, just as a capsule containing a rare type of pepper, crucial to the study of sea power, was being transported.</p>";
+    "<p>This is a sample preview for the converted book as a FYI.</p><p>In a verdant field near the airfield, an unexpected abduction took place, just as a capsule containing a rare type of pepper, crucial to the study of sea power, was being transported.</p>";
 
   const [preview, setPreview] = useState(default_preview);
   const [progress, setProgress] = useState(0);
@@ -331,7 +347,7 @@ export default function Home() {
                 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"
             ></div>
             <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
-              Allow Long Description
+              Long Definition
             </span>
           </label>
           <label className="inline-flex items-center mb-5 cursor-pointer">
@@ -388,7 +404,7 @@ export default function Home() {
           </div>
         </div>
         <div>
-            <Preview innerHTML={preview} />
+          <Preview innerHTML={preview} />
         </div>
       </div>
     </Fragment>
