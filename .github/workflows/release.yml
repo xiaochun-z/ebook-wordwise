@@ -49,7 +49,7 @@ jobs:
           #echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ubuntu-ports $VERSION_CODENAME-security universe" | sudo tee -a /etc/apt/sources.list
           #echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ubuntu-ports $VERSION_CODENAME-security multiverse" | sudo tee -a /etc/apt/sources.list
           sudo apt update
-          #sudo apt upgrade -y
+          sudo apt upgrade -y
           sudo apt install libwebkit2gtk-4.0-dev:arm64 -y
           sudo apt install libssl-dev:arm64 -y
           export PKG_CONFIG_SYSROOT_DIR=/usr/aarch64-linux-gnu/
