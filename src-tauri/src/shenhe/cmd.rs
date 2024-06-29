@@ -18,9 +18,12 @@ pub fn run_command<R: Runtime>(
     {
         command.creation_flags(CREATE_NO_WINDOW);
     }
-    let output = command
-        .output()
-        .map_err(|err| format!("{}: {}", name, err))?;
+    let output = command.output().map_err(|err| {
+        if name == "ebook-convert" {
+            return String::from("please install calibre first, click the 💗 on the left to open the About dialog, you can find the download URL there.");
+        }
+        return format!("{}: {}", name, err);
+    })?;
 
     let stdout = String::from_utf8_lossy(&output.stdout).to_string();
     let stderr = String::from_utf8_lossy(&output.stderr).to_string();
