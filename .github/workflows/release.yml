@@ -94,6 +94,11 @@ jobs:
         with:
           workspaces: './src-tauri -> target'
 
+      - name: Install macos dependencies
+        if: matrix.platform == 'macos-latest'
+        run: |
+          rustup component add rls
+  
       - name: Install Ubuntu dependencies
         if: matrix.platform == 'ubuntu-latest'
         run: |
