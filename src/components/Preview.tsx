@@ -10,8 +10,8 @@ export default function Preview({ innerHTML }: PreviewProps) {
       if (currentPlatform == "win32") {
         setMaxHeight(215);
       } else if (currentPlatform == "darwin") {
-        setMaxHeight(180);
-        setClamp("line-clamp-6");
+        setMaxHeight(190);
+        setClamp("line-clamp-7");
       }
     };
     setOSBasedMaxHeight();
