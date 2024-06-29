@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useState, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { dialog } from "@tauri-apps/api";
 //import { appWindow } from "@tauri-apps/api/window";
 import { invoke } from "@tauri-apps/api/tauri";
 import { listen } from "@tauri-apps/api/event";
@@ -80,21 +81,18 @@ export default function Home() {
         break;
     }
 
-    if ((preview_payload.format == "mobi" || preview_payload.format == "azw3") && preview_payload.wordwise_style == 1) {
+    if (
+      (preview_payload.format == "mobi" || preview_payload.format == "azw3") &&
+      preview_payload.wordwise_style == 1
+    ) {
       setWorkMesg(
         new WorkMesg(
           "text-red-600 dark:text-red-500",
           "Warning: Amazon Kindle probably does not support the `On top` style. "
         )
       );
-    }
-    else {
-      setWorkMesg(
-        new WorkMesg(
-          "text-red-800 dark:text-red-300",
-          ""
-        )
-      );
+    } else {
+      setWorkMesg(new WorkMesg("text-red-800 dark:text-red-300", ""));
     }
     //console.log(preview_payload);
     await invoke<string>("preview", {
@@ -181,23 +179,21 @@ export default function Home() {
     setWorking(false);
   }
 
-  async function select_book_dialog(): Promise<string> {
+  async function select_book_dialog() {
     setSelecting(true);
-    return new Promise(async (resolve, reject) => {
-      if (window.__TAURI_METADATA__) {
-        try {
-          const book_path: string = await invoke<string>("open_file_dialog", {
-            initialPath: book,
-          });
-          setbook(book_path);
-          resolve(book_path);
-          setSelecting(false);
-        } catch (e) {
-          reject(e);
-          setSelecting(false);
-        }
+    try {
+      const book_path = await dialog.open({
+        directory: false,
+        multiple: false,
+      });
+
+      if (book_path != null) {
+        setbook(book_path.toString());
       }
-    });
+      setSelecting(false);
+    } catch (error) {
+      console.error("Error selecting file:", error);
+    }
   }
 
   const supported_languages = [

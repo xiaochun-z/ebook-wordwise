@@ -13,7 +13,7 @@ use shenhe::{
     types::{Annotator, ChunkParameter, Payload, ProgressReporter, WorkMesg},
 };
 use std::path::Path;
-use tauri::{api::dialog::FileDialogBuilder, Builder, Runtime};
+use tauri::{Builder, Runtime};
 use uuid::Uuid;
 
 // fn get_path() -> Result<std::path::PathBuf, String> {
@@ -54,29 +54,29 @@ use uuid::Uuid;
 //     Ok(())
 // }
 
-#[tauri::command]
-async fn open_file_dialog(initial_path: String) -> Result<String, String> {
-    //println!("{}", initial_path);
-    let (tx, rx) = tokio::sync::oneshot::channel();
+// #[tauri::command]
+// async fn open_file_dialog(initial_path: String) -> Result<String, String> {
+//     //println!("{}", initial_path);
+//     let (tx, rx) = tokio::sync::oneshot::channel();
 
-    let initial_path = Path::new(&initial_path);
-    let dialog = if initial_path.exists() {
-        FileDialogBuilder::new().set_directory(initial_path)
-    } else {
-        FileDialogBuilder::new()
-    };
+//     let initial_path = Path::new(&initial_path);
+//     let dialog = if initial_path.exists() {
+//         FileDialogBuilder::new().set_directory(initial_path)
+//     } else {
+//         FileDialogBuilder::new()
+//     };
 
-    dialog.pick_file(move |file_path| {
-        if let Some(path) = file_path {
-            //println!("Selected file: {:?}", path);
-            let res = path.to_string_lossy().into_owned();
-            tx.send(Ok(res)).unwrap();
-        } else {
-            tx.send(Err("No file selected".into())).unwrap();
-        }
-    });
-    rx.await.unwrap()
-}
+//     dialog.pick_file(move |file_path| {
+//         if let Some(path) = file_path {
+//             //println!("Selected file: {:?}", path);
+//             let res = path.to_string_lossy().into_owned();
+//             tx.send(Ok(res)).unwrap();
+//         } else {
+//             tx.send(Err("No file selected".into())).unwrap();
+//         }
+//     });
+//     rx.await.unwrap()
+// }
 
 fn progress_fn<R: Runtime>(progress: f32, tauri_window: &tauri::Window<R>) {
     let percent = (0.2 + (0.9 - 0.2) * progress) * 100.0; // map to [20%, 90%]
@@ -230,7 +230,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             // read_settings,
             // save_settings,
-            open_file_dialog,
+            // open_file_dialog,
             start_job,
             check_ebook_convert,
             preview,
