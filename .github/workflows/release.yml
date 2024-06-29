@@ -32,7 +32,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: pguyot/arm-runner-action@v2.5.2
         with:
-          base_image: https://dietpi.com/downloads/images/DietPi_RPi-ARMv8-Bullseye.img.xz
+          base_image: raspios_lite_arm64:latest
           cpu: cortex-a53
           bind_mount_repository: true
           image_additional_mb: 10240
@@ -59,9 +59,9 @@ jobs:
             # Install frontend dependencies
             npm install
             # Build the application
-            cargo tauri build
+            npm run tauri build
       - name: Upload deb bundle
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Debian Bundle
           path: ${{ github.workspace }}/target/release/bundle/deb/*arm64.deb
