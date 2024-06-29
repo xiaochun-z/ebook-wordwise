@@ -29,37 +29,42 @@ jobs:
   build-arm:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-    - name: Setup ARM build environment
-      run: |
-          rustup target add aarch64-unknown-linux-gnu
-          sudo apt install gcc-aarch64-linux-gnu
-          sudo dpkg --add-architecture arm64
-          . /etc/os-release
-          #echo "using Ubuntu with codename $VERSION_CODENAME"
-          #echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ubuntu-ports $VERSION_CODENAME main restricted" | sudo tee -a /etc/apt/sources.list
-          #echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ubuntu-ports $VERSION_CODENAME-updates main restricted" | sudo tee -a /etc/apt/sources.list
-          #echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ubuntu-ports $VERSION_CODENAME universe" | sudo tee -a /etc/apt/sources.list
-          #echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ubuntu-ports $VERSION_CODENAME-updates universe" | sudo tee -a /etc/apt/sources.list
-          #echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ubuntu-ports $VERSION_CODENAME multiverse" | sudo tee -a /etc/apt/sources.list
-          #echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ubuntu-ports $VERSION_CODENAME-updates multiverse" | sudo tee -a /etc/apt/sources.list
-          #echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ubuntu-ports $VERSION_CODENAME-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
-          #echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ubuntu-ports $VERSION_CODENAME-security main restricted" | sudo tee -a /etc/apt/sources.list
-          #echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ubuntu-ports $VERSION_CODENAME-security universe" | sudo tee -a /etc/apt/sources.list
-          #echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ubuntu-ports $VERSION_CODENAME-security multiverse" | sudo tee -a /etc/apt/sources.list
-          sudo apt update
-          sudo apt upgrade -y
-          sudo apt install libwebkit2gtk-4.0-dev:arm64 -y
-          sudo apt install libssl-dev:arm64 -y
-          export PKG_CONFIG_SYSROOT_DIR=/usr/aarch64-linux-gnu/
-          pnpm install
-          pnpm run tauri build --target aarch64-unknown-linux-gnu
-    - name: Upload deb bundle
-      uses: actions/upload-artifact@v4
-      with:
-        name: ARM Debian File
-        path: src-tauri/target/release/bundle/deb/*arm64.deb
+      - uses: actions/checkout@v4
+      - uses: pguyot/arm-runner-action@v2.5.2
+        with:
+          base_image: https://dietpi.com/downloads/images/DietPi_RPi-ARMv8-Bullseye.img.xz
+          cpu: cortex-a53
+          bind_mount_repository: true
+          image_additional_mb: 10240
+          optimize_image: false
+          commands: |
+            # Rust complains (rightly) that $HOME doesn't match eid home
+            export HOME=/root
+            # Workaround to CI worker being stuck on Updating crates.io index
+            export CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse
+            # Install setup prerequisites
+            apt-get update -y --allow-releaseinfo-change
+            apt-get upgrade -y
+            apt-get autoremove -y
+            apt-get install curl
+            curl https://sh.rustup.rs -sSf | sh -s -- -y
+            . "$HOME/.cargo/env"
+            curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash
+            # Install framework specific packages
+            apt-get install -y nodejs
+            npm install next@latest react@latest react-dom@latest eslint-config-next@latest
+            # Install build tools and tauri-cli requirements
+            apt-get install -y libwebkit2gtk-4.0-dev build-essential wget libssl-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev
+            cargo install tauri-cli
+            # Install frontend dependencies
+            npm install
+            # Build the application
+            cargo tauri build
+      - name: Upload deb bundle
+        uses: actions/upload-artifact@v3
+        with:
+          name: Debian Bundle
+          path: ${{ github.workspace }}/target/release/bundle/deb/*arm64.deb
   release:
     strategy:
       fail-fast: false
