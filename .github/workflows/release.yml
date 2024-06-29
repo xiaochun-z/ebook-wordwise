@@ -88,7 +88,6 @@ jobs:
       - name: Setup Rust
         run: |
           rustup update --no-self-update
-          rustup component add rls
 
       - name: Rust cache
         uses: swatinem/rust-cache@v2
@@ -108,7 +107,7 @@ jobs:
       - name: CI Build
         if: ${{ github.ref_type == 'branch' }}
         run: |
-          pnpm rls
+          pnpm run tauri build
 
       - name: CI Upload Windows
         if: ${{ github.ref_type == 'branch' && matrix.platform == 'windows-latest' }}
