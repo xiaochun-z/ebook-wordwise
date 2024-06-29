@@ -1,18 +1,17 @@
 import { faFolderOpen } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { executableDir } from "@tauri-apps/api/path";
-import { open } from "@tauri-apps/api/shell";
+import { appDataDir } from "@tauri-apps/api/path";
+import { invoke } from "@tauri-apps/api/tauri";
 
 export default function OpenFolder() {
   const openFolderAndSelectFile = async () => {
-    try {
-      const installationPath = await executableDir();
-      console.log(installationPath);
-      await open(installationPath);
-    } catch (error) {
-      console.error("Error selecting file:", error);
-    }
+    let app_data = await appDataDir();
+    await invoke<boolean>("open_directory", { dir: app_data }).catch(
+      (error) => {
+        console.log(error);
+      }
+    );
   };
   return (
     <>

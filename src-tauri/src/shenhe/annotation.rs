@@ -1,21 +1,31 @@
+use crate::shenhe::types::APP_DATA_DIR;
+
 use super::types::{annotate_text, Annotator, Clean, Cleaner, DictRecord};
 use csv::{Reader, ReaderBuilder};
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{Error, ErrorKind};
+use std::path::Path;
 use std::result::Result;
 
-const WORDWISE_DICTIONARY_PATH: &str = "resources/wordwise-dict.";
-const LEMMA_DICTIONARY_PATH: &str = "resources/lemmatization-en.csv";
+const WORDWISE_DICTIONARY_PATH: &str = "wordwise-dict.";
+const LEMMA_DICTIONARY_PATH: &str = "lemmatization-en.csv";
 
 pub fn load_dict(lang: &str) -> Result<HashMap<String, DictRecord>, Error> {
-    let wordwise_dict_path = format!("{}{}.csv", WORDWISE_DICTIONARY_PATH, lang);
+    let wordwise_dict_path = Path::new(
+        APP_DATA_DIR
+            .get()
+            .clone()
+            .unwrap_or(&(String::from("resources"))),
+    )
+    .join(format!("{}{}.csv", WORDWISE_DICTIONARY_PATH, lang));
+
     let file = match File::open(&wordwise_dict_path) {
         Ok(file) => file,
         Err(e) => {
             println!("{:?}", e);
             if e.kind() == ErrorKind::NotFound {
-                println!("{} not found", wordwise_dict_path);
+                println!("{} not found", wordwise_dict_path.to_str().unwrap());
             }
             return Err(e);
         }
@@ -53,7 +63,15 @@ pub fn load_dict(lang: &str) -> Result<HashMap<String, DictRecord>, Error> {
 }
 
 pub fn load_lemma() -> Result<HashMap<String, String>, Error> {
-    let file = File::open(LEMMA_DICTIONARY_PATH)?;
+    let lemma_dict_path = Path::new(
+        APP_DATA_DIR
+            .get()
+            .clone()
+            .unwrap_or(&(String::from("resources"))),
+    )
+    .join(LEMMA_DICTIONARY_PATH);
+
+    let file = File::open(lemma_dict_path)?;
     let mut reader = ReaderBuilder::new().has_headers(true).from_reader(file);
     let lemma_dict: HashMap<_, _> = reader
         .records()
