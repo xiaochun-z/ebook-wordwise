@@ -1,17 +1,17 @@
 import { platform } from "@tauri-apps/api/os";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function Preview({ innerHTML }: PreviewProps) {
-  let maxHeight = 215;
-  let clamp = "line-clamp-8";
+  const [maxHeight, setMaxHeight] = useState(215);
+  const [clamp, setClamp] = useState("line-clamp-8");
   useEffect(() => {
     const setOSBasedMaxHeight = async () => {
       const currentPlatform = await platform();
-      if (currentPlatform === "win32") {
-        maxHeight = 215;
+      if (currentPlatform == "win32") {
+        setMaxHeight(215);
       } else if (currentPlatform == "darwin") {
-        maxHeight = 180;
-        clamp = "line-clamp-6";
+        setMaxHeight(180);
+        setClamp("line-clamp-6");
       }
     };
     setOSBasedMaxHeight();
