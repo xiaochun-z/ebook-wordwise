@@ -1,4 +1,3 @@
-use once_cell::sync::OnceCell;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use tauri::Runtime;
@@ -180,5 +179,3 @@ pub struct ChunkParameter<'a> {
     pub annotator: &'a Annotator<'a>,
 }
 pub type ProcessChunkFn = fn(input: &str, param: &ChunkParameter) -> String;
-
-pub static APP_DATA_DIR: OnceCell<String> = OnceCell::new();

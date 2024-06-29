@@ -1,8 +1,10 @@
 // use std::io::{self, Write};
 use super::types::ProgressReporter;
+#[cfg(target_os = "windows")]
 use std::os::windows::process::CommandExt;
 use std::process::Command;
 use tauri::{Runtime, Wry};
+#[cfg(target_os = "windows")]
 use winapi::um::winbase::CREATE_NO_WINDOW;
 
 pub fn run_command<R: Runtime>(
@@ -10,9 +12,13 @@ pub fn run_command<R: Runtime>(
     _reporter: Option<&ProgressReporter<R>>,
     args: &[&str],
 ) -> Result<String, String> {
-    let output = Command::new(name)
-        .args(args)
-        .creation_flags(CREATE_NO_WINDOW)
+    let mut command = Command::new(name);
+    command.args(args);
+    #[cfg(target_os = "windows")]
+    {
+        command.creation_flags(CREATE_NO_WINDOW);
+    }
+    let output = command
         .output()
         .map_err(|err| format!("{}: {}", name, err))?;
 

@@ -5,15 +5,13 @@ use serde::Deserialize;
 //use tauri::AppHandle;
 //use tauri::{Event, Manager, Runtime};
 mod shenhe;
-use fs_extra::{copy_items, dir::CopyOptions};
 use shenhe::{
     annotation::{load_dict, load_lemma},
     cmd::{ebook_convert_exists, run_command},
     html::{self, process_text},
     process,
-    types::{Annotator, ChunkParameter, Payload, ProgressReporter, WorkMesg, APP_DATA_DIR},
+    types::{Annotator, ChunkParameter, Payload, ProgressReporter, WorkMesg},
 };
-use std::error::Error;
 use std::path::Path;
 use tauri::{Builder, Runtime};
 use uuid::Uuid;
@@ -126,12 +124,10 @@ fn preview(payload: Payload, original: &str) -> String {
 }
 
 #[tauri::command]
-async fn open_directory<R: Runtime>(_app: tauri::AppHandle<R>, dir: &str) -> Result<(), String> {
-    println!("{}", dir);
-    let reporter: Option<&ProgressReporter<R>> = None;
-    let resource = Path::new(dir).join("resources");
+async fn open_directory<R: Runtime>(_app: tauri::AppHandle<R>) -> Result<(), String> {
+    let resource = std::env::current_dir().map_err(|e| e.to_string()).unwrap().join("resources");
     let resource = resource.to_str().unwrap();
-
+    let reporter: Option<&ProgressReporter<R>> = None;
     let os = std::env::consts::OS;
     match os {
         "windows" => run_command("explorer", reporter, &[resource])?,
@@ -240,39 +236,6 @@ async fn start_job<R: Runtime>(
     Ok(format!("{} save to {}", artifact_file, book_path))
 }
 
-fn copy_folder_recursively(from: &Path, to: &Path) -> Result<(), Box<dyn Error>> {
-    let mut options = CopyOptions::new();
-    options.copy_inside = true;
-    options.overwrite = true;
-
-    if !to.exists() {
-        std::fs::create_dir_all(to)?;
-    }
-
-    let items_to_copy = vec![from.display().to_string()];
-    copy_items(&items_to_copy, to, &options)?;
-
-    Ok(())
-}
-
-fn setup_data(app: &mut tauri::App) -> Result<(), Box<dyn Error>> {
-    let app_data = app.handle().path_resolver().app_data_dir();
-    if let Some(app_data) = app_data {
-        const RESORUCE_FOLDER: &'static str = "resources";
-        let execute_dir = std::env::current_exe().unwrap();
-        let execute_dir = execute_dir.parent().unwrap();
-        let resource = execute_dir.join(RESORUCE_FOLDER);
-        let app_resource = app_data.join(RESORUCE_FOLDER);
-        APP_DATA_DIR
-            .set(app_resource.to_string_lossy().into_owned())
-            .ok();
-        if app_resource.exists() {
-            return Ok(());
-        }
-        copy_folder_recursively(&resource, &app_data).map_err(|e| e)?;
-    }
-    Ok(())
-}
 fn main() {
     //use shenhe::{DictRow,load_dict};
     // use shenhe::html;
@@ -288,7 +251,6 @@ fn main() {
             preview,
             open_directory,
         ])
-        .setup(setup_data)
         // .setup(|app| {
         //let main_window = app.get_window("main").unwrap();
         //main_window.listen("event-startjob", button_click_handler);
