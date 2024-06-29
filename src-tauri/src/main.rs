@@ -157,7 +157,7 @@ async fn start_job<R: Runtime>(
 
     let uuid = Uuid::new_v4().to_string();
     let book_out_dir: String = format!("{}/{}/", book_path, uuid);
-    std::fs::create_dir_all(&book_out_dir).map_err(|e| e.to_string())?;
+    //std::fs::create_dir_all(&book_out_dir).map_err(|e| e.to_string())?;
     let book_dump = format!("{}/{}.htmlz", book_path, book_name_without_ext);
     let reporter = ProgressReporter::new(&window, progress_fn);
 

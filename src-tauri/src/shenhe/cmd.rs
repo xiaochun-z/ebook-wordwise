@@ -20,7 +20,7 @@ pub fn run_command<R: Runtime>(
     }
     let output = command.output().map_err(|err| {
         if name == "ebook-convert" {
-            return String::from("please install calibre first, click the 💗 on the left to open the About dialog, you can find the download URL there.");
+            return String::from("Please install calibre first, click the 💗 on the left to open the About dialog, you can find the download URL there.");
         }
         return format!("{}: {}", name, err);
     })?;
