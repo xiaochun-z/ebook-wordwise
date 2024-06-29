@@ -170,12 +170,10 @@ impl<'a> WorkMesg<'a> {
 }
 
 pub struct ChunkParameter<'a> {
-    pub format: &'a str,
     pub dict: &'a HashMap<String, DictRecord>,
     pub lemma: &'a HashMap<String, String>,
     pub def_length: i32,
-    pub including_phoneme: bool,
-    pub hint_level: i32,
+
     pub annotator: &'a Annotator<'a>,
 }
 pub type ProcessChunkFn = fn(input: &str, param: &ChunkParameter) -> String;

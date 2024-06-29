@@ -315,12 +315,9 @@ mod tests {
         dict.insert("world".to_string(), dr);
         let annotator = Annotator::InlineAnnotator(3, false);
         let param: ChunkParameter = ChunkParameter {
-            format: "epub",
             dict: &dict,
             lemma: &lemma,
             def_length: 1,
-            including_phoneme: false,
-            hint_level: 3,
             annotator: &annotator,
         };
 

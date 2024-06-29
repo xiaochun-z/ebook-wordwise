@@ -111,12 +111,9 @@ fn preview(payload: Payload, original: &str) -> String {
         true => 2,
     };
     let param: ChunkParameter = ChunkParameter {
-        format: &payload.format,
         dict: &dict,
         lemma: &lemma,
         def_length: def_len,
-        including_phoneme: payload.show_phoneme,
-        hint_level: payload.hint_level,
         annotator: &annotator,
     };
 
@@ -195,7 +192,6 @@ async fn start_job<R: Runtime>(
     process(
         html_file.as_str(),
         (&payload).language.as_str(),
-        (&payload).format.as_str(),
         (&payload).show_phoneme,
         if (&payload).allow_long { 2 } else { 1 },
         (&payload).hint_level,

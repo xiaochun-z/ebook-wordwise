@@ -13,7 +13,6 @@ use types::{Annotator, ChunkParameter, ProgressReporter, WorkMesg};
 pub fn process<R: Runtime>(
     file: &str,
     language: &str,
-    book_format: &str,
     include_phoneme: bool,
     def_len: i32,
     hint_level: i32,
@@ -31,12 +30,9 @@ pub fn process<R: Runtime>(
     };
 
     let param: ChunkParameter = ChunkParameter {
-        format: book_format,
         dict: &dict,
         lemma: &lemma,
         def_length: def_len,
-        including_phoneme: include_phoneme,
-        hint_level,
         annotator: &annotator,
     };
 
