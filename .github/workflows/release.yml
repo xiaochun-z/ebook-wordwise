@@ -34,17 +34,16 @@ jobs:
     - name: Setup ARM build environment
       run: |
           rustup target add aarch64-unknown-linux-gnu
-          rustup component add rls
           sudo apt install gcc-aarch64-linux-gnu
           sudo dpkg --add-architecture arm64
           . /etc/os-release
           sudo apt update
-          sudo apt upgrade -y
-          sudo apt install libwebkit2gtk-4.0-dev:arm64 -y
-          sudo apt install libssl-dev:arm64 -y
+          --sudo apt upgrade -y
+          --sudo apt install libwebkit2gtk-4.0-dev:arm64 -y
+          --sudo apt install libssl-dev:arm64 -y
           export PKG_CONFIG_SYSROOT_DIR=/usr/aarch64-linux-gnu/
           pnpm install
-          pnpm rls --target aarch64-unknown-linux-gnu
+          pnpm run tauri build --target aarch64-unknown-linux-gnu
     - name: Upload deb bundle
       uses: actions/upload-artifact@v4
       with:
