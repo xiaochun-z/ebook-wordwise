@@ -22,16 +22,16 @@ jobs:
 
         runs-on: ${{ matrix.platform }}
         steps:
-            - uses: actions/checkout@v3
+            - uses: actions/checkout@v4
 
             - name: Get version
               id: get_version
               uses: battila7/get-version-action@v2
 
             - name: setup node
-              uses: actions/setup-node@v3
+              uses: actions/setup-node@v4
               with:
-                  node-version: 20
+                  node-version: 22
 
             - name: install Rust stable
               uses: dtolnay/rust-toolchain@stable
@@ -50,7 +50,7 @@ jobs:
               if: matrix.platform == 'macos-latest'
               run: |
                   rustup target add aarch64-apple-darwin x86_64-apple-darwin
-            - uses: actions/cache@v2
+            - uses: actions/cache@v4
               with:
                   path: '**/node_modules'
                   key: ${{ runner.os }}-node-modules-${{ hashFiles('**/yarn.lock') }}
@@ -66,7 +66,7 @@ jobs:
             - name: Build Tauri App
               uses: tauri-apps/tauri-action@dev
               env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUBTOKEN }}
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   # ENABLE_CODE_SIGNING: ${{ secrets.APPLE_CERTIFICATE }}
                   # APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
                   # APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
