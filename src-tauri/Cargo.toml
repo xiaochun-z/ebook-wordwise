@@ -1,6 +1,6 @@
 [package]
-name = "rust-wordwise"
-version = "0.0.1"
+name = "ebook-wordwise"
+version = "0.2.1"
 description = "add wordwise to your ebook."
 authors = ["xiaochun"]
 edition = "2021"
