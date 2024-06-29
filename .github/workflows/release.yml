@@ -88,16 +88,12 @@ jobs:
       - name: Setup Rust
         run: |
           rustup update --no-self-update
+          rustup component add rls
 
       - name: Rust cache
         uses: swatinem/rust-cache@v2
         with:
           workspaces: './src-tauri -> target'
-
-      - name: Install macos dependencies
-        if: matrix.platform == 'macos-latest'
-        run: |
-          rustup component add rls
   
       - name: Install Ubuntu dependencies
         if: matrix.platform == 'ubuntu-latest'
