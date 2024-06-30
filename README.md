@@ -9,6 +9,7 @@ English, Chinese, Arabic, German, Spanish, French, Hindi, Japanese, Korean, Port
 * Windows
 * Linux
 * Mac OS
+
 For Mac OS, it works fine but I could provide a installer because I don't have a apple developer account, the built release from me does not work for you, you need to install it from the source code at this moment.
 
 # Support formats
