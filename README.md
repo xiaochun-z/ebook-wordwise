@@ -20,10 +20,10 @@ For Mac OS, it works fine but I could provide a installer because I don't have a
 
 ebook convert support a lot more formats but are not listed here.
 
-# Customizable
+# You can add your own translation
 You can customize your reading experience by editing the resource file, click the **folder** icon on the left bar you will open the resource directory, you can add new words or phrases to the .csv file so it tool can recognize more words.
 
-**Please always backup the updated .csv somewhere in case ebook convert overwrite your changes when updating a new version.**
+**Please always backup the updated .csv somewhere in case ebook convert overwrite your changes when updating to a new version.**
 
 You're welcome to contribute the translation and help other book readers all around the world.
 
