@@ -37,7 +37,12 @@ You're welcome to contribute the translation and help other book readers all aro
 ![Kindle](examples/kindle.png)
 
 ## Mac OS iBook
+
+show definition as inlined text
+
 ![MacOS Inline Style](examples/macos-inline.png)
+
+show definition on the top
 ![MacOS On Top Style](examples/macos-top.png)
 
 # Install from source code
