@@ -3,7 +3,7 @@ use csv::{Reader, ReaderBuilder};
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{Error, ErrorKind};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::result::Result;
 
 const WORDWISE_DICTIONARY_PATH: &str = "wordwise-dict.";
@@ -78,14 +78,12 @@ pub fn load_lemma() -> Result<HashMap<String, String>, Error> {
 }
 
 fn get_resource_path(resource_name: &str) -> PathBuf {
-   let path = Path::new(
-        APP_DATA_DIR
-            .get()
-            .clone()
-            .unwrap_or(&(String::from("resources"))),
-    ).join(resource_name);
+    if let Some(path) = APP_DATA_DIR.get(){
+        let path = path.clone();
+        return PathBuf::from(path.as_str()).join(resource_name);
+    }
 
-    return path;
+    return PathBuf::from("resources").join(resource_name);
 }
 
 pub fn annotate_phrase(

@@ -56,17 +56,18 @@ fn preview(payload: Payload, original: &str) -> String {
 #[tauri::command]
 async fn open_directory<R: Runtime>(app: tauri::AppHandle<R>) -> Result<(), String> {
     let env = app.env();
-    let resource = resource_dir(app.package_info(), &env).unwrap();
-    let resource = resource.join(RESORUCE_FOLDER);
-    let resource = resource.to_str().unwrap();
+    if let Some(resource) = resource_dir(app.package_info(), &env) {
+        let resource = resource.join(RESORUCE_FOLDER);
+        let resource = resource.to_str().unwrap();
 
-    let reporter: Option<&ProgressReporter<R>> = None;
-    let os = std::env::consts::OS;
-    match os {
-        "windows" => run_command("explorer", reporter, &[resource])?,
-        "macos" => run_command("open", reporter, &["-R", resource])?,
-        _ => format!("Running on an unsupported operating system: {}", os),
-    };
+        let reporter: Option<&ProgressReporter<R>> = None;
+        let os = std::env::consts::OS;
+        match os {
+            "windows" => run_command("explorer", reporter, &[resource])?,
+            "macos" => run_command("open", reporter, &["-R", resource])?,
+            _ => format!("Running on an unsupported operating system: {}", os),
+        };
+    }
 
     Ok(())
 }
@@ -171,12 +172,12 @@ async fn start_job<R: Runtime>(
 fn setup_data(app: &mut tauri::App) -> Result<(), Box<dyn Error>> {
     // if let Some(data_dir) = data_dir() {
     let env = app.env();
-    let resource = resource_dir(app.package_info(), &env).unwrap();
-    let app_resource = resource.join(RESORUCE_FOLDER);
-    APP_DATA_DIR
-        .set(app_resource.to_string_lossy().into_owned())
-        .ok();
-
+    if let Some(resource) = resource_dir(app.package_info(), &env) {
+        let app_resource = resource.join(RESORUCE_FOLDER);
+        APP_DATA_DIR
+            .set(app_resource.to_string_lossy().into_owned())
+            .ok();
+    }
     Ok(())
 }
 fn main() {
