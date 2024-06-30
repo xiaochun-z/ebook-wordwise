@@ -1,4 +1,4 @@
-# Add definition to your ebook
+# A tool for reading English books as a English learner
 this is a tool which help you reading English books, as an English learner, I found I need to look up the words in the dictionary frequently, it slows me down, and feel frastrating sometimes since it takes me to long to finish a single book. this tool requires **[calibre](https://calibre-ebook.com/download)** to convert the tool, please install calibre first to use this tool.
 Please add calibre to your PATH in envrionment variables if you have installed calibre but this tool cannot detect it.
 
@@ -22,7 +22,7 @@ ebook convert support a lot more formats but are not listed here.
 # Customizable
 You can customize your reading experience by editing the resource file, click the **folder** icon on the left bar you will open the resource directory, you can add new words or phrases to the .csv file so it tool can recognize more words.
 
-==Please always backup the updated .csv somewhere in case ebook convert overwrite your changes when updating a new version.==
+**Please always backup the updated .csv somewhere in case ebook convert overwrite your changes when updating a new version.**
 
 You're welcome to contribute the translation and help other book readers all around the world.
 
