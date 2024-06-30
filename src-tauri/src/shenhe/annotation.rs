@@ -83,7 +83,7 @@ fn get_resource_path(resource_name: &str) -> PathBuf {
         return PathBuf::from(path.as_str()).join(resource_name);
     }
 
-    return PathBuf::from("resources").join(resource_name);
+    std::env::current_exe().unwrap().parent().unwrap().join("resources").join(resource_name)
 }
 
 pub fn annotate_phrase(
