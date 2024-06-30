@@ -1,9 +1,9 @@
-use super::types::{annotate_text, Annotator, Clean, Cleaner, DictRecord};
+use super::types::{annotate_text, Annotator, Clean, Cleaner, DictRecord, APP_DATA_DIR};
 use csv::{Reader, ReaderBuilder};
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{Error, ErrorKind};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::result::Result;
 
 const WORDWISE_DICTIONARY_PATH: &str = "wordwise-dict.";
@@ -11,7 +11,7 @@ const LEMMA_DICTIONARY_PATH: &str = "lemmatization-en.csv";
 
 pub fn load_dict(lang: &str) -> Result<HashMap<String, DictRecord>, Error> {
     let wordwise_dict_path =
-        Path::new("resources").join(format!("{}{}.csv", WORDWISE_DICTIONARY_PATH, lang));
+        get_resource_path(format!("{}{}.csv", WORDWISE_DICTIONARY_PATH, lang).as_str());
 
     let file = match File::open(&wordwise_dict_path) {
         Ok(file) => file,
@@ -56,7 +56,7 @@ pub fn load_dict(lang: &str) -> Result<HashMap<String, DictRecord>, Error> {
 }
 
 pub fn load_lemma() -> Result<HashMap<String, String>, Error> {
-    let lemma_dict_path = Path::new("resources").join(LEMMA_DICTIONARY_PATH);
+    let lemma_dict_path = get_resource_path(LEMMA_DICTIONARY_PATH);
 
     let file = File::open(lemma_dict_path)?;
     let mut reader = ReaderBuilder::new().has_headers(true).from_reader(file);
@@ -75,6 +75,17 @@ pub fn load_lemma() -> Result<HashMap<String, String>, Error> {
         .collect();
 
     Ok(lemma_dict)
+}
+
+fn get_resource_path(resource_name: &str) -> PathBuf {
+   let path = Path::new(
+        APP_DATA_DIR
+            .get()
+            .clone()
+            .unwrap_or(&(String::from("resources"))),
+    ).join(resource_name);
+
+    return path;
 }
 
 pub fn annotate_phrase(

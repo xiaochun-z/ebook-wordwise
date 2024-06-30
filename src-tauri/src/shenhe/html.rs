@@ -18,24 +18,6 @@ pub fn process_html<R: Read + Seek, W: Write, Rt: Runtime>(
     const CHUNK_SIZE: usize = 100 * 1024; // 100 KB
     let chunks = split_html(reader, CHUNK_SIZE, param, process_fn, reporter)
         .map_err(|err| err.to_string())?;
-    // let num_chunks = chunks.len();
-
-    // let progress_counter = Arc::new(AtomicUsize::new(0));
-
-    // // Process the chunks in parallel
-    // let processed_chunks: Vec<String> = (&chunks)
-    //     .into_par_iter()
-    //     .map(|chunk| {
-    //         let processed_chunk = process_fn(chunk.as_str(), param);
-    //         let progress = progress_counter.fetch_add(1, Ordering::SeqCst) + 1;
-
-    //         if let Some(reporter) = reporter {
-    //             let prog = progress as f32 / num_chunks as f32;
-    //             reporter.report(prog);
-    //         }
-    //         processed_chunk
-    //     })
-    //     .collect();
 
     // Write the processed chunks back in order
     for chunk in chunks {
@@ -62,21 +44,6 @@ pub fn process_text_fn(input: &str, param: &ChunkParameter) -> String {
     res
 }
 
-// fn find_valid_utf8_boundary(buffer: &[u8], end: usize) -> usize {
-//     let mut valid_end = end;
-
-//     // Safely convert the slice to a string
-//     while valid_end > 0 {
-//         if let Ok(buffer_str) = std::str::from_utf8(&buffer[..valid_end]) {
-//             if buffer_str.is_char_boundary(valid_end) {
-//                 break;
-//             }
-//         }
-//         valid_end -= 1;
-//     }
-
-//     valid_end
-// }
 fn split_html<R: Read + Seek, Rt: Runtime>(
     reader: &mut R,
     max_size: usize,

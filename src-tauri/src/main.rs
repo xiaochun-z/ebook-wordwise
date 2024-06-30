@@ -1,93 +1,26 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 use serde::Deserialize;
-//use serde_json::from_str;
-//use tauri::AppHandle;
-//use tauri::{Event, Manager, Runtime};
+
 mod shenhe;
 use shenhe::{
     annotation::{load_dict, load_lemma},
     cmd::{ebook_convert_exists, run_command},
     html::{self, process_text},
     process,
-    types::{Annotator, ChunkParameter, Payload, ProgressReporter, WorkMesg},
+    types::{Annotator, ChunkParameter, Payload, ProgressReporter, WorkMesg, APP_DATA_DIR},
 };
-use std::path::Path;
-use tauri::{Builder, Runtime};
+use std::{error::Error, path::Path};
+use tauri::api::path::resource_dir;
+use tauri::{Builder, Manager, Runtime};
 use uuid::Uuid;
-
-// fn get_path() -> Result<std::path::PathBuf, String> {
-//     let cwd = std::env::current_dir().map_err(|e| e.to_string())?;
-//     Ok(cwd.join("settings.json"))
-// }
-
-// #[tauri::command]
-// async fn save_settings<R: Runtime>(
-//     _app: tauri::AppHandle<R>,
-//     _window: tauri::Window<R>,
-//     settings: AppSetting,
-// ) -> Result<(), String> {
-//     let json = serde_json::to_string(&settings).unwrap();
-//     println!("{}", &json);
-//     // get current directory and concat with settings.json
-//     let path = get_path()?;
-//     std::fs::write(path, json).map_err(|e| e.to_string())?;
-//     // print to console
-//     Ok(())
-// }
-
-// #[tauri::command]
-// async fn read_settings<R: Runtime>(
-//     _app: tauri::AppHandle<R>,
-//     window: tauri::Window<R>,
-// ) -> Result<(), String> {
-//     // read settings.json
-//     println!("calling read_settings");
-//     let path = get_path()?;
-//     let json = std::fs::read_to_string(path).map_err(|e| e.to_string())?;
-//     println!("{}", &json);
-//     let settings: AppSetting = serde_json::from_str(&json).map_err(|e| e.to_string())?;
-//     // return settings object to javascript app
-//     window
-//         .emit("settings_retrived", settings)
-//         .map_err(|e| e.to_string())?;
-//     Ok(())
-// }
-
-// #[tauri::command]
-// async fn open_file_dialog(initial_path: String) -> Result<String, String> {
-//     //println!("{}", initial_path);
-//     let (tx, rx) = tokio::sync::oneshot::channel();
-
-//     let initial_path = Path::new(&initial_path);
-//     let dialog = if initial_path.exists() {
-//         FileDialogBuilder::new().set_directory(initial_path)
-//     } else {
-//         FileDialogBuilder::new()
-//     };
-
-//     dialog.pick_file(move |file_path| {
-//         if let Some(path) = file_path {
-//             //println!("Selected file: {:?}", path);
-//             let res = path.to_string_lossy().into_owned();
-//             tx.send(Ok(res)).unwrap();
-//         } else {
-//             tx.send(Err("No file selected".into())).unwrap();
-//         }
-//     });
-//     rx.await.unwrap()
-// }
+const RESORUCE_FOLDER: &'static str = "resources";
 
 fn progress_fn<R: Runtime>(progress: f32, tauri_window: &tauri::Window<R>) {
     let percent = (0.2 + (0.9 - 0.2) * progress) * 100.0; // map to [20%, 90%]
     tauri_window.emit("event-progress", percent).unwrap();
 }
 
-// fn button_click_handler(event: Event) {
-//     // convert payload to struct Payload
-//     let payload: Payload = from_str(event.payload().unwrap()).unwrap();
-//     println!("payload: {:?}", payload);
-// }
 #[tauri::command]
 fn check_ebook_convert() -> Result<bool, String> {
     let exists = ebook_convert_exists();
@@ -121,9 +54,12 @@ fn preview(payload: Payload, original: &str) -> String {
 }
 
 #[tauri::command]
-async fn open_directory<R: Runtime>(_app: tauri::AppHandle<R>) -> Result<(), String> {
-    let resource = std::env::current_dir().map_err(|e| e.to_string()).unwrap().join("resources");
+async fn open_directory<R: Runtime>(app: tauri::AppHandle<R>) -> Result<(), String> {
+    let env = app.env();
+    let resource = resource_dir(app.package_info(), &env).unwrap();
+    let resource = resource.join(RESORUCE_FOLDER);
     let resource = resource.to_str().unwrap();
+
     let reporter: Option<&ProgressReporter<R>> = None;
     let os = std::env::consts::OS;
     match os {
@@ -232,28 +168,26 @@ async fn start_job<R: Runtime>(
     Ok(format!("{} save to {}", artifact_file, book_path))
 }
 
-fn main() {
-    //use shenhe::{DictRow,load_dict};
-    // use shenhe::html;
-    // html::main();
+fn setup_data(app: &mut tauri::App) -> Result<(), Box<dyn Error>> {
+    // if let Some(data_dir) = data_dir() {
+    let env = app.env();
+    let resource = resource_dir(app.package_info(), &env).unwrap();
+    let app_resource = resource.join(RESORUCE_FOLDER);
+    APP_DATA_DIR
+        .set(app_resource.to_string_lossy().into_owned())
+        .ok();
 
+    Ok(())
+}
+fn main() {
     Builder::default()
         .invoke_handler(tauri::generate_handler![
-            // read_settings,
-            // save_settings,
-            // open_file_dialog,
             start_job,
             check_ebook_convert,
             preview,
             open_directory,
         ])
-        // .setup(|app| {
-        //let main_window = app.get_window("main").unwrap();
-        //main_window.listen("event-startjob", button_click_handler);
-        // let handler_id = main_window.listen("event-startjob", button_click_handler);
-        //main_window.unlisten(handler_id);
-        //     Ok(())
-        // })
+        .setup(setup_data)
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
