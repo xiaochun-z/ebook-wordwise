@@ -1,28 +1,16 @@
-import { Fragment, useState, useEffect } from "react";
+import { Fragment } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMoon, faLightbulb } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 import About from "./about";
 import OpenFolder from "./openfolder";
-import { appWindow } from "@tauri-apps/api/window";
 
-function Menu() {
-  useEffect(() => {
-    appWindow.theme().then((theme) => {
-      setDarkTheme(theme === "dark");
-    });
-  }, []);
-  function changeTheme() {
-    if (darkTheme) {
-      document.documentElement.classList.remove("dark");
-    } else {
-      document.documentElement.classList.add("dark");
-    }
+export interface UpdateTheme {
+  darkTheme: boolean;
+  setDarkTheme(isDark: boolean): void;
+}
 
-    setDarkTheme(!darkTheme);
-  }
-
-  const [darkTheme, setDarkTheme] = useState(true);
+const Menu: React.FC<UpdateTheme> = ({ darkTheme, setDarkTheme }) => {
 
   return (
     <Fragment>
@@ -33,7 +21,7 @@ function Menu() {
             href: "#",
             icon: () => (darkTheme ? faLightbulb : faMoon),
             clickHandler: () => {
-              changeTheme();
+              setDarkTheme(!darkTheme);
             },
           },
         ].map(({ id, href, icon, clickHandler }) => (
