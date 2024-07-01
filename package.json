@@ -1,7 +1,7 @@
 {
   "name": "ebook-wordwise",
   "private": true,
-  "version": "0.1.5",
+  "version": "0.1.8",
   "type": "module",
   "license": "LGPL-2.1-or-later",
   "scripts": {

@@ -7,7 +7,7 @@
   },
   "package": {
     "productName": "ebook-wordwise",
-    "version": "0.1.5"
+    "version": "0.1.8"
   },
   "tauri": {
     "allowlist": {
@@ -52,7 +52,6 @@
         "height": 620,
         "resizable": false,
         "maximizable": false,
-        "theme": "Dark",
         "title": "ebook wordwise"
       }
     ],

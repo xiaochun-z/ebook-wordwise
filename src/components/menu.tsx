@@ -1,11 +1,17 @@
-import { Fragment, useState } from "react";
+import { Fragment, useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMoon, faLightbulb } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 import About from "./about";
 import OpenFolder from "./openfolder";
+import { appWindow } from "@tauri-apps/api/window";
 
 function Menu() {
+  useEffect(() => {
+    appWindow.theme().then((theme) => {
+      setDarkTheme(theme === "dark");
+    });
+  }, []);
   function changeTheme() {
     if (darkTheme) {
       document.documentElement.classList.remove("dark");
