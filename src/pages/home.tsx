@@ -279,7 +279,7 @@ export default function Home() {
                 id="book-location-icon"
                 value={book}
                 onChange={(e) => setbook(e.target.value)}
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                className="menu-bg border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:menu-bg dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 placeholder="select your ebook from your computer..."
               />
             </div>
@@ -320,7 +320,7 @@ export default function Home() {
             max="5"
             step="1"
             value={hintLevel}
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+            className="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer dark:menu-bg"
             disabled={false}
             onChange={(e) => setHintLevel(parseInt(e.target.value))}
           />
@@ -335,9 +335,9 @@ export default function Home() {
               className="sr-only peer"
             />
             <div
-              className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4
+              className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4
              peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer
-              dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full
+              dark:menu-bg peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full
                peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px]
                 after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 
                 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"
@@ -355,8 +355,8 @@ export default function Home() {
               onChange={(_) => setShowPhoneme(!showPhoneme)}
             />
             <div
-              className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4
-             peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 
+              className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4
+             peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:menu-bg
              peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full
               peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px]
                after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 
@@ -372,9 +372,9 @@ export default function Home() {
             type="button"
             onClick={start_job}
             disabled={working || selecting}
-            className="disabled:opacity-50 text-white bg-blue-700 hover:bg-blue-800 focus:ring-1 focus:outline-none
-             focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex 
-             items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+            className="disabled:opacity-50 text-white bg-blue-700 hover:bg-blue-800
+              font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex 
+             items-center dark:bg-blue-600 dark:hover:bg-blue-700"
           >
             {
               <FontAwesomeIcon
@@ -386,7 +386,7 @@ export default function Home() {
             Process
           </button>
           <div className="flex items-center">
-            <div id="message" className={`line-clamp-2 ${workmesg.class_name}`}>
+            <div id="message" className={`line-clamp-1 ${workmesg.class_name}`} title={workmesg.text}>
               {workmesg.text}
             </div>
           </div>

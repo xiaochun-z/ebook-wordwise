@@ -19,7 +19,7 @@ export default function Preview({ innerHTML }: PreviewProps) {
   return (
     <div
       style={{ height: maxHeight + "px", overflow: "hidden" }}
-      className="preview overflow-ellipsis bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 p-4 font-normal text-gray-700 dark:text-gray-400"
+      className="preview overflow-ellipsis menu-bg border border-gray-200 rounded-lg shadow dark:menu-bg dark:border-gray-700 p-4 font-normal text-gray-700 dark:text-gray-400"
     >
       <div dangerouslySetInnerHTML={{ __html: innerHTML }}></div>
     </div>

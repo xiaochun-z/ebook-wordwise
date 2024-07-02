@@ -35,10 +35,10 @@ function App() {
   }
   return (
     <div className="flex min-h-screen flex-row antialiased text-slate-500 dark:text-slate-400 bg-gray-100 dark:bg-slate-900">
-      <nav className="flex flex-col min-h-screen w-14 items-center pt-0 pb-10 border-r-2 dark:border-slate-600">
+      <nav className="flex flex-col min-h-screen w-14 items-center pt-0 pb-10 border-r-2 menu-bg dark:menu-border dark:menu-bg">
         <Menu darkTheme={theme} setDarkTheme={setDarkMode} />
       </nav>
-      <main className="flex min-h-screen px-4 py-2 container">
+      <main className="flex min-h-screen px-4 py-2 container bg dark:bg">
         <Routes>
           <Route index path="/" element={<Home />} />
           <Route path="/settings" element={<Settings />} />

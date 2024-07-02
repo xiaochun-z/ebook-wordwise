@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import { app } from "@tauri-apps/api";
 
 export default function About() {
+  const linkClassName = "text-blue-700 hover:text-blue-900 dark:text-red-300 dark:hover:text-red-100 hover:underline"
   const [openModal, setOpenModal] = useState(false);
   const [version, setVersion] = useState("");
   useEffect(() => {
@@ -35,13 +36,13 @@ export default function About() {
       <Modal show={openModal} onClose={() => setOpenModal(false)}>
         <Modal.Header>About Ebook Wordwise {version}</Modal.Header>
         <Modal.Body>
-          <div className="space-y-6">
-            <p className="text-base leading-relaxed text-gray-500 dark:text-gray-400">
+          <div className="space-y-6 text-base leading-relaxed text-gray-500 dark:text-gray-400">
+            <p>
               This program is using
               Tauri/React/TailWindCss/Flowbite/FontAwesome/Calibre. Before using
               this program, it is necessary to install{" "}
               <Link
-                className="text-blue-700 hover:text-blue-900 dark:text-red-300 dark:hover:text-red-100 hover:underline"
+                className={linkClassName}
                 to="https://calibre-ebook.com/download"
                 target="_blank"
               >
@@ -49,11 +50,11 @@ export default function About() {
               </Link>
               . Gratitude is extended to all the open source communities.
             </p>
-            <p className="text-base leading-relaxed text-gray-500 dark:text-gray-400">
+            <p>
               If you have questions for using this app, please consider using
               this{" "}
               <Link
-                className="text-blue-700 hover:text-blue-900 dark:text-red-300 dark:hover:text-red-100 hover:underline"
+                className={linkClassName}
                 to="https://github.com/xiaochun-z/ebook-wordwise/wiki"
                 target="_blank"
               >
@@ -61,12 +62,12 @@ export default function About() {
               </Link>
               .
             </p>
-            <p className="text-base leading-relaxed text-gray-500 dark:text-gray-400">
+            <p>
               My family and I currently reside in China and are actively
               searching for new opportunities abroad. If you are interested in
               offering assistance, kindly reach out to me at{" "}
               <Link
-                className="text-blue-700 hover:text-blue-900 dark:text-red-300 dark:hover:text-red-100 hover:underline"
+                className={linkClassName}
                 to="mailto:xiaochun.zh@outlook.com"
               >
                 xiaochun.zh@outlook.com
