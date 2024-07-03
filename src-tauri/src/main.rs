@@ -62,12 +62,13 @@ async fn open_directory<R: Runtime>(app: tauri::AppHandle<R>) -> Result<(), Stri
 
         let reporter: Option<&ProgressReporter<R>> = None;
         let os = std::env::consts::OS;
-        match os {
+
+       let _ =  match os {
             "windows" => run_command("explorer", reporter, &[resource])?,
             "macos" => run_command("open", reporter, &["-R", resource])?,
             "linux" => run_command("open", reporter, &[resource])?,
-            _ => format!("Running on an unsupported operating system: {}", os),
-        }
+            _ => format!("unsupported operating system: {}", os),
+        };
     }
 
     Ok(())
