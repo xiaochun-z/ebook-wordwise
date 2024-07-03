@@ -1,8 +1,8 @@
-use super::types::{annotate_text, Annotator, Clean, Cleaner, DictRecord, APP_DATA_DIR};
-use csv::{Reader, ReaderBuilder};
+use super::types::{ annotate_text, Annotator, Clean, Cleaner, DictRecord, APP_DATA_DIR };
+use csv::{ Reader, ReaderBuilder };
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::{Error, ErrorKind};
+use std::io::{ Error, ErrorKind };
 use std::path::PathBuf;
 use std::result::Result;
 
@@ -10,8 +10,9 @@ const WORDWISE_DICTIONARY_PATH: &str = "wordwise-dict.";
 const LEMMA_DICTIONARY_PATH: &str = "lemmatization-en.csv";
 
 pub fn load_dict(lang: &str) -> Result<HashMap<String, DictRecord>, Error> {
-    let wordwise_dict_path =
-        get_resource_path(format!("{}{}.csv", WORDWISE_DICTIONARY_PATH, lang).as_str());
+    let wordwise_dict_path = get_resource_path(
+        format!("{}{}.csv", WORDWISE_DICTIONARY_PATH, lang).as_str()
+    );
 
     let file = match File::open(&wordwise_dict_path) {
         Ok(file) => file,
@@ -38,17 +39,14 @@ pub fn load_dict(lang: &str) -> Result<HashMap<String, DictRecord>, Error> {
             record.get(5).unwrap().to_string(),
             record.get(6).unwrap().parse::<i32>().unwrap(),
         );
-        wordwise_dict.insert(
-            word.clone(),
-            DictRecord {
-                word: word.clone(),
-                phoneme,
-                full_def,
-                short_def,
-                example_sentences,
-                hint_lvl,
-            },
-        );
+        wordwise_dict.insert(word.clone(), DictRecord {
+            word: word.clone(),
+            phoneme,
+            full_def,
+            short_def,
+            example_sentences,
+            hint_lvl,
+        });
     }
     //println!("{:?}", wordwise_dict.get("amperage"));
 
@@ -64,10 +62,7 @@ pub fn load_lemma() -> Result<HashMap<String, String>, Error> {
         .records()
         .map(|result| {
             result.map(|record| {
-                (
-                    record.get(1).unwrap().to_string(),
-                    record.get(0).unwrap().to_string(),
-                )
+                (record.get(1).unwrap().to_string(), record.get(0).unwrap().to_string())
             })
         })
         .collect::<Result<Vec<_>, _>>()?
@@ -78,12 +73,12 @@ pub fn load_lemma() -> Result<HashMap<String, String>, Error> {
 }
 
 fn get_resource_path(resource_name: &str) -> PathBuf {
-    if let Some(path) = APP_DATA_DIR.get(){
+    if let Some(path) = APP_DATA_DIR.get() {
         let path = path.clone();
         return PathBuf::from(path.as_str()).join(resource_name);
     }
 
-    std::env::current_exe().unwrap().parent().unwrap().join("resources").join(resource_name)
+    std::env::current_dir().unwrap().join("resources").join(resource_name)
 }
 
 pub fn annotate_phrase(
@@ -91,7 +86,7 @@ pub fn annotate_phrase(
     sentence: &str,
     dict: &HashMap<String, DictRecord>,
     lemma_dict: &HashMap<String, String>,
-    def_length: i32,
+    def_length: i32
 ) -> String {
     let words: Vec<&str> = sentence.split_whitespace().collect();
     let mut result = String::new();
@@ -103,7 +98,7 @@ pub fn annotate_phrase(
         let mut longest_length = 0;
 
         // Try to find the longest phrase in the dictionary, up to max_phrase_length words
-        for j in (i + 1)..=words.len() {
+        for j in i + 1..=words.len() {
             if j - i > max_phrase_length {
                 break;
             }
@@ -124,10 +119,9 @@ pub fn annotate_phrase(
             let dict_record = get_dict_record(phrase.as_str(), dict, lemma_dict);
             match dict_record {
                 Some(dr) => {
-                    result.push_str(&format!(
-                        "{} ",
-                        annotate_text(annotator, dr, phrase.as_str(), def_length,)
-                    ));
+                    result.push_str(
+                        &format!("{} ", annotate_text(annotator, dr, phrase.as_str(), def_length))
+                    );
                 }
                 None => {
                     result.push_str(&format!("{} ", phrase.as_str()));
@@ -140,10 +134,9 @@ pub fn annotate_phrase(
 
             match dict_record {
                 Some(dr) => {
-                    result.push_str(&format!(
-                        "{} ",
-                        annotate_text(annotator, dr, words[i], def_length)
-                    ));
+                    result.push_str(
+                        &format!("{} ", annotate_text(annotator, dr, words[i], def_length))
+                    );
                 }
                 None => {
                     result.push_str(&format!("{} ", words[i]));
@@ -190,7 +183,7 @@ fn restore_whitespace(sentence: &str, replaced_sentence: &str) -> String {
 fn get_dict_record<'a>(
     word: &str,
     wordwise_dict: &'a HashMap<String, DictRecord>,
-    lemma_dict: &HashMap<String, String>,
+    lemma_dict: &HashMap<String, String>
 ) -> Option<&'a DictRecord> {
     let (clean_word, _, _) = Cleaner::clean_word(word, true);
     //println!("{} -> {}, {:?}", word, clean_word, wordwise_dict.get(clean_word.as_str()));
@@ -251,23 +244,16 @@ mod tests {
     #[test]
     fn test_clean_word() {
         let test_cases = vec![
-            (
-                ", Hello, World，大家！!*•-&",
-                true,
-                "hello, world，大家！",
-                ", ",
-                "!*•-&",
-            ),
-            (
-                "Hello, World，大家！!*•-&",
-                false,
-                "Hello, World，大家！",
-                "",
-                "!*•-&",
-            ),
+            (", Hello, World，大家！!*•-&", true, "hello, world，大家！", ", ", "!*•-&"),
+            ("Hello, World，大家！!*•-&", false, "Hello, World，大家！", "", "!*•-&")
         ];
-        for (word, lowercase, expected_cleaned_word, expected_prefix, expected_suffix) in test_cases
-        {
+        for (
+            word,
+            lowercase,
+            expected_cleaned_word,
+            expected_prefix,
+            expected_suffix,
+        ) in test_cases {
             let (cleaned_word, prefix, suffix) = Cleaner::clean_word(word, lowercase);
             assert_eq!(cleaned_word, expected_cleaned_word);
             assert_eq!(prefix, expected_prefix);
@@ -299,10 +285,7 @@ mod tests {
         let dict = load_dict("en").unwrap();
         let dict_record = dict.get(word).unwrap();
         assert_eq!(dict_record.phoneme, "/pɪkˈtɔriəl/");
-        assert_eq!(
-            dict_record.full_def,
-            "of or relating to painting or drawing"
-        );
+        assert_eq!(dict_record.full_def, "of or relating to painting or drawing");
         let res = dict_record.get_meaning(2, 3, true);
         assert_eq!(res, "/pɪkˈtɔriəl/ of or relating to painting or drawing");
     }
@@ -320,21 +303,49 @@ mod tests {
         );
         let anotator = Annotator::RubyAnnotator(4, false);
         let res = annotate_text(&anotator, &dict_record, word, 1);
-        assert_eq!(
-            res,
-            "<ruby>pictorials<rt>relating to a drawing</rt></ruby>."
-        );
+        assert_eq!(res, "<ruby>pictorials<rt>relating to a drawing</rt></ruby>.");
     }
 
     #[test]
     fn test_annotate_phrase() {
-        let data = vec![("I think this is in someone's pocket, but I'm not advancement.","I think this is <ruby>in someone's pocket<rt>under someone's control</rt></ruby>, but I'm not advancement.", 2),
-        ("I think this is in someone's pocket but I'm not advancement","I think this is <ruby>in someone's pocket<rt>under someone's control</rt></ruby> but I'm not <ruby>advancement<rt>the act of moving forward</rt></ruby>", 4),
-        ("I think this is overcrowded but I'm not. ","I think this is overcrowded but I'm not. ", 2),
-        ("The business of eating being concluded, and no one uttering a word of sociable conversation, I approached a window to examine the weather.","The business of eating being concluded, and no one <ruby>uttering<rt>complete and total</rt></ruby> a word of <ruby>sociable<rt>involving friendly relations</rt></ruby> conversation, I approached a window to examine the weather.",4),
-        ("unreasonable versatile.","<ruby>unreasonable<rt>not fair or appropriate</rt></ruby> <ruby>versatile<rt>able to do different things</rt></ruby>.", 4),
-        ("unreasonable versatile.","<ruby>unreasonable<rt>not fair or appropriate</rt></ruby> versatile.", 3),
-        ("two <span>unreasonable</span> versatile one.","two <span>unreasonable</span> <ruby>versatile<rt>able to do different things</rt></ruby> one.", 4)];
+        let data = vec![
+            (
+                "I think this is in someone's pocket, but I'm not advancement.",
+                "I think this is <ruby>in someone's pocket<rt>under someone's control</rt></ruby>, but I'm not advancement.",
+                2,
+            ),
+            (
+                "I think this is in someone's pocket but I'm not advancement",
+                "I think this is <ruby>in someone's pocket<rt>under someone's control</rt></ruby> but I'm not <ruby>advancement<rt>the act of moving forward</rt></ruby>",
+                4,
+            ),
+            (
+                "I think this is overcrowded but I'm not. ",
+                "I think this is overcrowded but I'm not. ",
+                2,
+            ),
+            (
+                "The business of eating being concluded, and no one uttering a word of sociable conversation, I approached a window to examine the weather.",
+                "The business of eating being concluded, and no one <ruby>uttering<rt>complete and total</rt></ruby> a word of <ruby>sociable<rt>involving friendly relations</rt></ruby> conversation, I approached a window to examine the weather.",
+                4,
+            ),
+            (
+                "unreasonable versatile.",
+                "<ruby>unreasonable<rt>not fair or appropriate</rt></ruby> <ruby>versatile<rt>able to do different things</rt></ruby>.",
+                4,
+            ),
+            (
+                "unreasonable versatile.",
+                "<ruby>unreasonable<rt>not fair or appropriate</rt></ruby> versatile.",
+                3,
+            ),
+            (
+                "two <span>unreasonable</span> versatile one.",
+                "two <span>unreasonable</span> <ruby>versatile<rt>able to do different things</rt></ruby> one.",
+                4,
+            ),
+            ("<b>This is the time</b> we need.", "<b>This is the time</b> we need.", 1)
+        ];
 
         let hashes = load_dict("en").unwrap();
         let lemma = load_lemma().unwrap();
@@ -357,7 +368,7 @@ mod tests {
                 "two <span>unreasonable</span> versatile one.",
                 "two <span>unreasonable</span> <span style='color:blue'>versatile</span> one.",
                 Annotator::ColorAnnotator("blue", 4, false),
-            ),
+            )
         ];
 
         let hashes = load_dict("en").unwrap();

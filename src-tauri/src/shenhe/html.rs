@@ -1,11 +1,8 @@
 use super::annotation::annotate_phrase;
-use super::types::{ChunkParameter, ProcessChunkFn, ProgressReporter};
+use super::types::{ ChunkParameter, ProcessChunkFn, ProgressReporter };
 use rayon::prelude::*;
-use std::io::{Read, Seek, SeekFrom, Write};
-use std::sync::{
-    atomic::{AtomicUsize, Ordering},
-    Arc,
-};
+use std::io::{ Read, Seek, SeekFrom, Write };
+use std::sync::{ atomic::{ AtomicUsize, Ordering }, Arc };
 use tauri::Runtime;
 
 pub fn process_html<R: Read + Seek, W: Write, Rt: Runtime>(
@@ -13,17 +10,16 @@ pub fn process_html<R: Read + Seek, W: Write, Rt: Runtime>(
     writer: &mut W,
     param: &ChunkParameter,
     process_fn: ProcessChunkFn,
-    reporter: Option<&ProgressReporter<Rt>>,
+    reporter: Option<&ProgressReporter<Rt>>
 ) -> Result<(), String> {
     const CHUNK_SIZE: usize = 100 * 1024; // 100 KB
-    let chunks = split_html(reader, CHUNK_SIZE, param, process_fn, reporter)
-        .map_err(|err| err.to_string())?;
+    let chunks = split_html(reader, CHUNK_SIZE, param, process_fn, reporter).map_err(|err|
+        err.to_string()
+    )?;
 
     // Write the processed chunks back in order
     for chunk in chunks {
-        writer
-            .write(chunk.as_bytes())
-            .map_err(|err| err.to_string())?;
+        writer.write(chunk.as_bytes()).map_err(|err| err.to_string())?;
     }
 
     Ok(())
@@ -34,13 +30,7 @@ pub fn process_text_fn(input: &str, param: &ChunkParameter) -> String {
         return input.to_string();
     }
 
-    let res = annotate_phrase(
-        param.annotator,
-        input,
-        param.dict,
-        param.lemma,
-        param.def_length,
-    );
+    let res = annotate_phrase(param.annotator, input, param.dict, param.lemma, param.def_length);
     res
 }
 
@@ -49,33 +39,29 @@ fn split_html<R: Read + Seek, Rt: Runtime>(
     max_size: usize,
     param: &ChunkParameter,
     process_fn: ProcessChunkFn,
-    reporter: Option<&ProgressReporter<Rt>>,
+    reporter: Option<&ProgressReporter<Rt>>
 ) -> Result<Vec<String>, String> {
-    let file_size = reader
-        .seek(SeekFrom::End(0))
-        .map_err(|err| err.to_string())? as usize;
-    reader
-        .seek(SeekFrom::Start(0))
-        .map_err(|err| err.to_string())?;
+    let file_size = reader.seek(SeekFrom::End(0)).map_err(|err| err.to_string())? as usize;
+    reader.seek(SeekFrom::Start(0)).map_err(|err| err.to_string())?;
     let mut buffer = vec![0; file_size as usize];
-    reader
-        .read_exact(&mut buffer)
-        .map_err(|err| format!("{:?}", err))?;
+    reader.read_exact(&mut buffer).map_err(|err| format!("{:?}", err))?;
 
     let body_position = buffer
         .windows("<body".len())
         .position(|x| x == b"<body")
         .unwrap_or(0);
 
-    let body_position = body_position
-        + buffer[body_position..]
+    let body_position =
+        body_position +
+        buffer[body_position..]
             .windows(">".len())
             .position(|x| x == b">")
-            .unwrap_or(0)
-        + ">".len();
+            .unwrap_or(0) +
+        ">".len();
 
-    let body_end_position = body_position
-        + buffer[body_position..]
+    let body_end_position =
+        body_position +
+        buffer[body_position..]
             .windows("</body>".len())
             .position(|x| x == b"</body>")
             .unwrap_or(0);
@@ -86,8 +72,8 @@ fn split_html<R: Read + Seek, Rt: Runtime>(
         chunks.push(String::from_utf8_lossy(&buffer[..body_position]).into_owned());
     }
 
-    if body_position < file_size as usize {
-        if body_end_position < file_size as usize {
+    if body_position < (file_size as usize) {
+        if body_end_position < (file_size as usize) {
             let body_chunks = split_chunk(&buffer[body_position..body_end_position], max_size);
             let num_chunks = body_chunks.len();
 
@@ -98,7 +84,7 @@ fn split_html<R: Read + Seek, Rt: Runtime>(
                     let progress = progress_counter.fetch_add(1, Ordering::SeqCst) + 1;
 
                     if let Some(reporter) = reporter {
-                        let prog = progress as f32 / num_chunks as f32;
+                        let prog = (progress as f32) / (num_chunks as f32);
                         reporter.report(prog);
                     }
                     process_text(x, param, process_fn)
@@ -147,9 +133,10 @@ fn split_chunk(buffer: &[u8], max_size: usize) -> Vec<String> {
 
         if !found_tag {
             chunks.push(
-                std::str::from_utf8(&buffer[start..end])
+                std::str
+                    ::from_utf8(&buffer[start..end])
                     .unwrap()
-                    .to_string(),
+                    .to_string()
             );
             start = end;
         }
@@ -231,8 +218,8 @@ fn chunk_end_with(chunk: &[u8], str: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::super::types::{Annotator, DictRecord, ProgressReporter};
-    use super::{process_html, ChunkParameter};
+    use super::super::types::{ Annotator, DictRecord, ProgressReporter };
+    use super::{ process_html, ChunkParameter };
     use std::collections::HashMap;
     use std::io::Cursor;
     use tauri::Wry;
@@ -292,14 +279,7 @@ mod tests {
             let mut reader = Cursor::new(input);
             let mut writer = Cursor::new(Vec::new());
             let reporter: Option<&ProgressReporter<Wry>> = None;
-            process_html(
-                &mut reader,
-                &mut writer,
-                &param,
-                fake_process_text,
-                reporter,
-            )
-            .unwrap();
+            process_html(&mut reader, &mut writer, &param, fake_process_text, reporter).unwrap();
             let vec_w = writer.into_inner();
             let output_data = String::from_utf8(vec_w).unwrap();
             assert_eq!(output_data, expected);

@@ -3,14 +3,14 @@ use super::types::ProgressReporter;
 #[cfg(target_os = "windows")]
 use std::os::windows::process::CommandExt;
 use std::process::Command;
-use tauri::{Runtime, Wry};
+use tauri::{ Runtime, Wry };
 #[cfg(target_os = "windows")]
 use winapi::um::winbase::CREATE_NO_WINDOW;
 
 pub fn run_command<R: Runtime>(
     name: &str,
     _reporter: Option<&ProgressReporter<R>>,
-    args: &[&str],
+    args: &[&str]
 ) -> Result<String, String> {
     let mut command = Command::new(name);
     command.args(args);
@@ -20,7 +20,9 @@ pub fn run_command<R: Runtime>(
     }
     let output = command.output().map_err(|err| {
         if name == "ebook-convert" {
-            return String::from("Please install calibre first, click the 💗 on the left to open the About dialog, you can find the download URL there.");
+            return String::from(
+                "Please install calibre first, click the 💗 on the left to open the About dialog, you can find the download URL there."
+            );
         }
         return format!("{}: {}", name, err);
     })?;
@@ -58,11 +60,13 @@ mod tests {
         let reporter: Option<&ProgressReporter<Wry>> = None;
         match run_command("ebook-convert", reporter, &["--version"]) {
             Ok(output) => assert!(output.contains("calibre")),
-            Err(error) => assert_eq!(
-                error, "",
-                "did you installed calibre? assertion failed with error: {}",
-                error
-            ),
+            Err(error) =>
+                assert_eq!(
+                    error,
+                    "",
+                    "did you installed calibre? assertion failed with error: {}",
+                    error
+                ),
         }
     }
 

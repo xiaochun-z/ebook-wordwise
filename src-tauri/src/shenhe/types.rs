@@ -1,6 +1,6 @@
 use once_cell::sync::OnceCell;
-use serde::{Deserialize, Serialize};
-use std::collections::{HashMap, HashSet};
+use serde::{ Deserialize, Serialize };
+use std::collections::{ HashMap, HashSet };
 use tauri::Runtime;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -18,12 +18,13 @@ impl DictRecord {
         &self,
         def_length: i32,
         user_hint_lvl: i32,
-        user_show_phoneme: bool,
+        user_show_phoneme: bool
     ) -> String {
         let mut definition = String::new();
-        if (user_hint_lvl == 0 || user_hint_lvl >= self.hint_lvl)
-            && user_show_phoneme
-            && !self.phoneme.is_empty()
+        if
+            (user_hint_lvl == 0 || user_hint_lvl >= self.hint_lvl) &&
+            user_show_phoneme &&
+            !self.phoneme.is_empty()
         {
             definition += &self.phoneme;
         }
@@ -66,11 +67,7 @@ impl Clean for Cleaner {
                 suffix.chars().rev().collect::<String>(),
             )
         } else {
-            (
-                cleaned_word.to_string(),
-                prefix.to_string(),
-                suffix.chars().rev().collect::<String>(),
-            )
+            (cleaned_word.to_string(), prefix.to_string(), suffix.chars().rev().collect::<String>())
         }
     }
 }
@@ -85,7 +82,7 @@ pub fn annotate_text(
     annotator: &Annotator,
     dr: &DictRecord,
     target: &str,
-    def_length: i32,
+    def_length: i32
 ) -> String {
     match annotator {
         Annotator::RubyAnnotator(hint_lvl, phoneme) => {
@@ -94,7 +91,10 @@ pub fn annotate_text(
             if meaning.len() > 0 {
                 let update = format!(
                     "{}<ruby>{}<rt>{}</rt></ruby>{}",
-                    prefix, clean_word, meaning, suffix
+                    prefix,
+                    clean_word,
+                    meaning,
+                    suffix
                 );
                 return target.replace(target, &update);
             }
@@ -106,7 +106,9 @@ pub fn annotate_text(
             if clean_word.len() > 0 {
                 let update = format!(
                     "{}<span style='color:{color}'>{}</span>{}",
-                    prefix, clean_word, suffix
+                    prefix,
+                    clean_word,
+                    suffix
                 );
                 return target.replace(target, &update);
             }
@@ -118,7 +120,10 @@ pub fn annotate_text(
             if meaning.len() > 0 {
                 let update = format!(
                     "{}{}<span style='font-size:smaller;color:gray'> [{}]</span>{}",
-                    prefix, clean_word, meaning, suffix
+                    prefix,
+                    clean_word,
+                    meaning,
+                    suffix
                 );
                 return target.replace(target, &update);
             }
@@ -146,7 +151,7 @@ pub struct ProgressReporter<'a, R: Runtime> {
 impl<'a, R: Runtime> ProgressReporter<'a, R> {
     pub fn new(
         tauri_window: &'a tauri::Window<R>,
-        progress_fn: fn(f32, &tauri::Window<R>),
+        progress_fn: fn(f32, &tauri::Window<R>)
     ) -> Self {
         Self {
             progress_fn,
