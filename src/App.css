@@ -1,28 +1,33 @@
 .line-clamp-7 {
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 7;
-}
-.line-clamp-8 {
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 8;
-}
-html .menu-bg{
-    background-color: #f2f2f2;
-}
-html.dark .dark\:menu-bg{
-    background-color: #2a2a2a;    
-}
-html.dark .dark\:menu-border{
-    border: #1e1e1e;  
-}
-html.dark .dark\:bg{
-    background-color: #1e1e1e;    
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 7;
 }
 
-html .bg{
-    background-color: #fff;    
+.line-clamp-8 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 8;
+}
+
+html .menu-bg {
+  background-color: #f2f2f2;
+}
+
+html.dark .dark\:menu-bg {
+  background-color: #2a2a2a;
+}
+
+html.dark .dark\:menu-border {
+  border: #1e1e1e;
+}
+
+html.dark .dark\:bg {
+  background-color: #1e1e1e;
+}
+
+html .bg {
+  background-color: #fff;
 }

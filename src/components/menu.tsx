@@ -11,7 +11,6 @@ export interface UpdateTheme {
 }
 
 const Menu: React.FC<UpdateTheme> = ({ darkTheme, setDarkTheme }) => {
-
   return (
     <Fragment>
       <ul>
@@ -48,6 +47,6 @@ const Menu: React.FC<UpdateTheme> = ({ darkTheme, setDarkTheme }) => {
       </ul>
     </Fragment>
   );
-}
+};
 
 export default Menu;

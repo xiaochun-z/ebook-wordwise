@@ -386,7 +386,11 @@ export default function Home() {
             Process
           </button>
           <div className="flex items-center">
-            <div id="message" className={`line-clamp-1 ${workmesg.class_name}`} title={workmesg.text}>
+            <div
+              id="message"
+              className={`line-clamp-1 ${workmesg.class_name}`}
+              title={workmesg.text}
+            >
               {workmesg.text}
             </div>
           </div>

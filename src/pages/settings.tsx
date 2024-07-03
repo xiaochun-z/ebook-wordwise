@@ -8,13 +8,13 @@ function setTheme(theme: string) {
     document.documentElement.classList.remove("dark");
   }
 
-  const settings:AppSetting = {
+  const settings: AppSetting = {
     theme: theme,
   };
 
   SaveSettings(settings).then((res) => {
     console.log(res);
-  })
+  });
 }
 
 function SettingsPage() {
@@ -24,8 +24,7 @@ function SettingsPage() {
       set_setting_text(JSON.stringify(res));
       console.log(res);
     });
-  };
-
+  }
 
   return (
     <div>

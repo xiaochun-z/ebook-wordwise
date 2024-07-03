@@ -7,10 +7,10 @@ import { appWindow } from "@tauri-apps/api/window";
 import { useState, useEffect } from "react";
 
 function App() {
-  const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+  const darkModeMediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
   const [theme, setTheme] = useState(false);
 
-  darkModeMediaQuery.addEventListener('change', (event) => {
+  darkModeMediaQuery.addEventListener("change", (event) => {
     if (event.matches) {
       setDarkMode(true);
     } else {
@@ -19,10 +19,9 @@ function App() {
   });
 
   useEffect(() => {
-    appWindow.theme().then(t => {
+    appWindow.theme().then((t) => {
       setDarkMode(t === "dark");
     });
-
   }, []);
 
   function setDarkMode(isDark: boolean) {

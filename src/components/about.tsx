@@ -6,7 +6,8 @@ import { Link } from "react-router-dom";
 import { app } from "@tauri-apps/api";
 
 export default function About() {
-  const linkClassName = "text-blue-700 hover:text-blue-900 dark:text-red-300 dark:hover:text-red-100 hover:underline"
+  const linkClassName =
+    "text-blue-700 hover:text-blue-900 dark:text-red-300 dark:hover:text-red-100 hover:underline";
   const [openModal, setOpenModal] = useState(false);
   const [version, setVersion] = useState("");
   useEffect(() => {
