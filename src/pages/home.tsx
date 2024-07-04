@@ -34,7 +34,7 @@ export default function Home() {
         setWorkMesg(
           new WorkMesg(
             "text-red-800 dark:text-red-300",
-            "Calibre is not detected, please install calibre and add calibre to your PATH."
+            "Calibre is not detected, please install calibre."
           )
         );
       }
