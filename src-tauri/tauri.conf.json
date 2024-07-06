@@ -61,7 +61,8 @@
     "bundle": {
       "active": true,
       "targets": "all",
-      "identifier": "com.tauri.org.shenhe",
+      "identifier": "org.shenhe",
+      "publisher": "xiaochun",
       "windows": {
         "certificateThumbprint": "e717c1bdcc981cdb2d90a27d0fb17dc9090b082d",
         "digestAlgorithm": "sha256",
