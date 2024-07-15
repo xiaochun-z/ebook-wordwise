@@ -1,7 +1,11 @@
 # A tool for reading English books as a English learner
 This is a tool which help you reading English books, as an English learner, when reading English novels, I found I need to look up the words in the dictionary frequently, this slows me down, Sometime I feel frustrating  since it takes me to long to finish reading a single book. 
 Can I  get the meaning of a new word without looking up in the dictionary?
+
 Then this tool comes out.
+
+View more here if you cannot see screenshots, 如果你在中国，可能看不到截图，点击这个链接查看：
+https://www.shenhe.org/en/article/ebook-wordwise.html
 
 # Requirements
 eBook Wordwise  requires [calibre](https://calibre-ebook.com/download) to convert the books, please install calibre first to use this tool. for windows, please consider adding calibre to your PATH in environment variables if you have installed calibre but this tool cannot detect it.
