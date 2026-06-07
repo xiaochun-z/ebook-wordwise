@@ -1,4 +1,4 @@
-import { platform } from "@tauri-apps/api/os";
+import { platform } from "@tauri-apps/plugin-os";
 import { useEffect, useState } from "react";
 import "./preview.css";
 
@@ -7,9 +7,9 @@ export default function Preview({ innerHTML }: PreviewProps) {
   useEffect(() => {
     const setOSBasedMaxHeight = async () => {
       const currentPlatform = await platform();
-      if (currentPlatform == "win32") {
+      if (currentPlatform == "windows") {
         setMaxHeight(215);
-      } else if (currentPlatform == "darwin") {
+      } else if (currentPlatform == "macos") {
         setMaxHeight(190);
       }
     };

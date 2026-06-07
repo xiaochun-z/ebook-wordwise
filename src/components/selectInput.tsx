@@ -1,4 +1,5 @@
 import React from 'react';
+import { Select } from 'flowbite-react';
 
 interface SelectInputProps {
   id: string;
@@ -14,21 +15,19 @@ const SelectInput: React.FC<SelectInputProps> = ({ id, label, value, options, on
       <label htmlFor={id} className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
         {label}
       </label>
-      <select
+      <Select
         id={id}
         value={value}
         onChange={onChange}
-        className="menu-bg border-gray-300 text-gray-900 text-sm rounded-lg
-                   focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:menu-bg
-                   dark:border-gray-600 dark:placeholder-gray-400 dark:text-white
-                   dark:focus:ring-blue-500 dark:focus:border-blue-500"
+        sizing="sm"
+        className="[&_select]:!py-1 [&_select]:!h-8 [&_select]:!px-2.5"
       >
         {options.map(({ value, text }) => (
           <option key={value} value={value}>
             {text}
           </option>
         ))}
-      </select>
+      </Select>
     </div>
   );
 };

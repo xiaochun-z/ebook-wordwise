@@ -2,49 +2,49 @@
   "build": {
     "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "npm run build",
-    "devPath": "http://localhost:1420",
-    "distDir": "../dist"
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:1420"
   },
-  "package": {
-    "productName": "ebook-wordwise",
-    "version": "0.1.8"
-  },
-  "tauri": {
-    "allowlist": {
-      "all": false,
-      "path": {
-        "all": true
-      },
-      "dialog": {
-        "all": false,
-        "ask": false,
-        "confirm": false,
-        "message": false,
-        "open": true,
-        "save": false
-      },
-      "shell": {
-        "all": false,
-        "open": true
-      },
-      "os": {
-        "all": true
-      }
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "resources": [
+      "resources/"
+    ],
+    "publisher": "xiaochun",
+    "windows": {
+      "certificateThumbprint": "e717c1bdcc981cdb2d90a27d0fb17dc9090b082d",
+      "digestAlgorithm": "sha256",
+      "timestampUrl": "http://timestamp.comodoca.com"
     },
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "createUpdaterArtifacts": "v1Compatible"
+  },
+  "productName": "ebook-wordwise",
+  "mainBinaryName": "ebook-wordwise",
+  "version": "0.1.8",
+  "identifier": "org.shenhe",
+  "plugins": {
     "updater": {
-      "active": true,
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDJEQ0Q4RTVGMUUxMDIyQTUKUldTbEloQWVYNDdOTGFWY2hLNUhrTVlXN2lpQmszQ3JVajd1eVZMZVRpTjVubEJibXdVeE8rN0wK",
       "endpoints": [
         "https://shenhe.org/ebook-wordwise/{{target}}/{{current_version}}",
         "https://gist.githubusercontent.com/xiaochun-z/05326c594c34756ef479b99aeb2bba77/raw/ebook-wordwise.json",
         "https://gist.githubusercontent.com/xiaochun-z/05326c594c34756ef479b99aeb2bba77/raw/"
       ],
-      "dialog": true,
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDJEQ0Q4RTVGMUUxMDIyQTUKUldTbEloQWVYNDdOTGFWY2hLNUhrTVlXN2lpQmszQ3JVajd1eVZMZVRpTjVubEJibXdVeE8rN0wK",
       "windows": {
         "installMode": "passive",
         "installerArgs": []
       }
-    },
+    }
+  },
+  "app": {
     "windows": [
       {
         "fullscreen": false,
@@ -52,32 +52,12 @@
         "height": 620,
         "resizable": false,
         "maximizable": false,
-        "title": "ebook wordwise"
+        "title": "ebook wordwise",
+        "useHttpsScheme": true
       }
     ],
     "security": {
       "csp": null
-    },
-    "bundle": {
-      "active": true,
-      "targets": "all",
-      "identifier": "org.shenhe",
-      "publisher": "xiaochun",
-      "windows": {
-        "certificateThumbprint": "e717c1bdcc981cdb2d90a27d0fb17dc9090b082d",
-        "digestAlgorithm": "sha256",
-        "timestampUrl": "http://timestamp.comodoca.com"
-      },
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ],
-      "resources": [
-        "resources/"
-      ]
     }
   }
 }

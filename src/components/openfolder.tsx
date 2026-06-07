@@ -1,7 +1,7 @@
 import { faFolderOpen } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { invoke } from "@tauri-apps/api/tauri";
+import { invoke } from "@tauri-apps/api/core";
 
 export default function OpenFolder() {
   const openFolderAndSelectFile = async () => {

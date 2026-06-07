@@ -3,8 +3,9 @@ import { Routes, Route } from "react-router-dom";
 import Home from "./pages/home";
 import Settings from "./pages/settings";
 import "./App.css";
-import { appWindow } from "@tauri-apps/api/window";
+import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { useState, useEffect } from "react";
+const appWindow = getCurrentWebviewWindow()
 
 function App() {
   const [theme, setTheme] = useState(false);

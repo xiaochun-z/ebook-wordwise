@@ -1,8 +1,8 @@
 import { Fragment, useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { dialog } from "@tauri-apps/api";
+import {  } from "@tauri-apps/api";
 //import { appWindow } from "@tauri-apps/api/window";
-import { invoke } from "@tauri-apps/api/tauri";
+import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import SelectInput from "../components/selectInput";
 import Preview from "../components/Preview";
@@ -10,6 +10,7 @@ import {
   faFolderOpen,
   faArrowsRotate,
 } from "@fortawesome/free-solid-svg-icons";
+import * as dialog from "@tauri-apps/plugin-dialog"
 
 class WorkMesg {
   class_name: string;
@@ -43,7 +44,7 @@ export default function Home() {
 
   useEffect(() => {
     check_ebook_convert();
-    if (window.__TAURI_METADATA__) {
+    if ('__TAURI_INTERNALS__' in window) {
       listen<number>("event-progress", (event) => {
         setProgress(event.payload);
       });
@@ -231,7 +232,7 @@ export default function Home() {
                 id="book-location-icon"
                 value={book}
                 onChange={(e) => setbook(e.target.value)}
-                className="menu-bg border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:menu-bg dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full !py-1 !pr-2 !pl-10 !h-8 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 placeholder="select your ebook from your computer..."
               />
             </div>
@@ -239,7 +240,7 @@ export default function Home() {
               type="button"
               onClick={select_book_dialog}
               disabled={working || selecting}
-              className="disabled:opacity-50 disabled:cursor-not-allowed text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2"
+              className="disabled:opacity-50 disabled:cursor-not-allowed text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 !py-1 !h-8 text-center me-2 mb-2"
             >
               Browse...
             </button>

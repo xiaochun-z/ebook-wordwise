@@ -7,7 +7,7 @@ use html::process_html;
 use std::fs::File;
 use std::io::{ BufReader, BufWriter };
 use std::path::Path;
-use tauri::Runtime;
+use tauri::{ Runtime, Emitter };
 use types::{ Annotator, ChunkParameter, ProgressReporter, WorkMesg };
 
 pub fn process<R: Runtime>(

@@ -1,6 +1,6 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-use serde::Deserialize;
+
 
 mod shenhe;
 use shenhe::{
@@ -11,8 +11,7 @@ use shenhe::{
     types::{ Annotator, ChunkParameter, Payload, ProgressReporter, WorkMesg, APP_DATA_DIR },
 };
 use std::{ error::Error, path::Path };
-use tauri::api::path::resource_dir;
-use tauri::{ Builder, Manager, Runtime };
+use tauri::{ Builder, Manager, Runtime, Emitter };
 use uuid::Uuid;
 const RESOURCE_FOLDER: &'static str = "resources";
 
@@ -55,8 +54,7 @@ fn preview(payload: Payload, original: &str) -> String {
 
 #[tauri::command]
 async fn open_directory<R: Runtime>(app: tauri::AppHandle<R>) -> Result<(), String> {
-    let env = app.env();
-    if let Some(resource) = resource_dir(app.package_info(), &env) {
+    if let Ok(resource) = app.path().resource_dir() {
         let resource = resource.join(RESOURCE_FOLDER);
         let resource = resource.to_str().unwrap();
 
@@ -155,16 +153,18 @@ async fn start_job<R: Runtime>(
 }
 
 fn setup_data(app: &mut tauri::App) -> Result<(), Box<dyn Error>> {
-    // if let Some(data_dir) = data_dir() {
-    let env = app.env();
-    if let Some(resource) = resource_dir(app.package_info(), &env) {
+    if let Ok(resource) = app.path().resource_dir() {
         let app_resource = resource.join(RESOURCE_FOLDER);
         APP_DATA_DIR.set(app_resource.to_string_lossy().into_owned()).ok();
     }
     Ok(())
 }
+
 fn main() {
     Builder::default()
+        .plugin(tauri_plugin_os::init())
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_shell::init())
         .invoke_handler(
             tauri::generate_handler![start_job, check_ebook_convert, preview, open_directory]
         )
@@ -173,7 +173,4 @@ fn main() {
         .expect("error while running tauri application");
 }
 
-#[derive(serde::Serialize, Deserialize, Clone, Debug)]
-struct AppSetting {
-    theme: String,
-}
+

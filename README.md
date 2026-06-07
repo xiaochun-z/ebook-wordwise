@@ -18,7 +18,7 @@ English, Chinese, Arabic, German, Spanish, French, Hindi, Japanese, Korean, Port
 * Linux
 * Mac OS
 
-For Mac OS, it works fine but I could provide a installer because I don't have a apple developer account, the built release from me does not work for you, you need to install it from the source code at this moment.
+For Mac OS, it works fine but I couldn't provide an installer because I don't have an apple developer account, so the built release from me might not work for you. You may need to install it from the source code at this moment.
 
 # Support formats
 * epub
@@ -55,10 +55,17 @@ show definition on the top ⬇️
 
 # Install from source code
 * Install Rust: https://www.rust-lang.org/tools/install
-* Install NodeJS: https://nodejs.org/en/download/package-manager
-* Install yarn: https://v3.yarnpkg.com/getting-started/install
+* Install NodeJS (npm is included): https://nodejs.org/en/download/package-manager
+* Install Tauri prerequisites depending on your OS: https://v2.tauri.app/start/prerequisites/
 
-Build the application
+Install dependencies and build the application:
 ```bash
-yarn tauri build
+# Install Javascript dependencies
+npm install
+
+# Run the app in development mode
+npm run tauri dev
+
+# Build the release application
+npm run tauri build
 ```
