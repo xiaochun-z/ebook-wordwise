@@ -7,7 +7,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": "all",
+    "targets": ["appimage", "dmg", "nsis"],
     "resources": [
       "resources/"
     ],
