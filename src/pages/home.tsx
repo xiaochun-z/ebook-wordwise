@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState, useCallback } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { dialog } from "@tauri-apps/api";
 //import { appWindow } from "@tauri-apps/api/window";
@@ -43,7 +43,6 @@ export default function Home() {
 
   useEffect(() => {
     check_ebook_convert();
-    notify("", "");
     if (window.__TAURI_METADATA__) {
       listen<number>("event-progress", (event) => {
         setProgress(event.payload);
@@ -54,84 +53,14 @@ export default function Home() {
     }
   }, []);
 
-  // This is your notify function that you want to call
-  async function notify(stateName: string, value: any) {
-    //console.log(`State ${stateName} has been set to`, value);
-    switch (stateName) {
-      case "book":
-        preview_payload.book = value;
-        break;
-      case "format":
-        preview_payload.format = value;
-        break;
-      case "language":
-        preview_payload.language = value;
-        break;
-      case "wordwiseStyle":
-        preview_payload.wordwise_style = value;
-        break;
-      case "hintLevel":
-        preview_payload.hint_level = value;
-        break;
-      case "allowLong":
-        preview_payload.allow_long = value;
-        break;
-      case "showPhoneme":
-        preview_payload.show_phoneme = value;
-        break;
-    }
-
-    if (
-      (preview_payload.format == "mobi" || preview_payload.format == "azw3") &&
-      preview_payload.wordwise_style == 1
-    ) {
-      setWorkMesg(
-        new WorkMesg(
-          "text-red-600 dark:text-red-500",
-          "Warning: Amazon Kindle probably does not support the `On top` style. "
-        )
-      );
-    } else {
-      setWorkMesg(new WorkMesg("text-red-800 dark:text-red-300", ""));
-    }
-    //console.log(preview_payload);
-    await invoke<string>("preview", {
-      payload: preview_payload,
-      original: default_preview,
-    }).then((res) => {
-      //console.log(res);
-      setPreview(res);
-    });
-  }
-
-  function useNotifyingState<T>(
-    initialValue: T,
-    stateName: string
-  ): [T, (newValue: T) => void] {
-    const [value, setValue] = useState(initialValue);
-
-    const setValueAndNotify = useCallback(
-      (newValue: T) => {
-        setValue(newValue);
-        notify(stateName, newValue);
-      },
-      [stateName]
-    );
-
-    return [value, setValueAndNotify];
-  }
-
   const [book, setbook] = useState("");
 
-  const [format, setFormat] = useNotifyingState("epub", "format");
-  const [language, setLanguage] = useNotifyingState("en", "language");
-  const [wordwiseStyle, setWordwiseStyle] = useNotifyingState(
-    0,
-    "wordwiseStyle"
-  );
-  const [hintLevel, setHintLevel] = useNotifyingState(3, "hintLevel");
-  const [allowLong, setAllowLong] = useNotifyingState(false, "allowLong");
-  const [showPhoneme, setShowPhoneme] = useNotifyingState(false, "showPhoneme");
+  const [format, setFormat] = useState("epub");
+  const [language, setLanguage] = useState("en");
+  const [wordwiseStyle, setWordwiseStyle] = useState(0);
+  const [hintLevel, setHintLevel] = useState(3);
+  const [allowLong, setAllowLong] = useState(false);
+  const [showPhoneme, setShowPhoneme] = useState(false);
 
   let preview_payload = {
     book: book,
@@ -147,6 +76,29 @@ export default function Home() {
     "<p>This is a sample preview for the converted book as a FYI.</p><p>In a verdant field near the airfield, an unexpected abduction took place, just as a capsule containing a rare type of pepper, crucial to the study of sea power, was being transported.</p>";
 
   const [preview, setPreview] = useState(default_preview);
+
+  useEffect(() => {
+    if (
+      (preview_payload.format == "mobi" || preview_payload.format == "azw3") &&
+      preview_payload.wordwise_style == 1
+    ) {
+      setWorkMesg(
+        new WorkMesg(
+          "text-red-600 dark:text-red-500",
+          "Warning: Amazon Kindle probably does not support the `On top` style. "
+        )
+      );
+    } else if (book !== "" || format !== "epub" || language !== "en" || wordwiseStyle !== 0 || hintLevel !== 3 || allowLong !== false || showPhoneme !== false) {
+      setWorkMesg(new WorkMesg("text-red-800 dark:text-red-300", ""));
+    }
+    
+    invoke<string>("preview", {
+      payload: preview_payload,
+      original: default_preview,
+    }).then((res) => {
+      setPreview(res);
+    }).catch(console.error);
+  }, [book, format, language, wordwiseStyle, hintLevel, allowLong, showPhoneme]);
   const [progress, setProgress] = useState(0);
   const [working, setWorking] = useState(false);
   const [selecting, setSelecting] = useState(false);

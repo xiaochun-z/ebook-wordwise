@@ -14,7 +14,7 @@ use std::{ error::Error, path::Path };
 use tauri::api::path::resource_dir;
 use tauri::{ Builder, Manager, Runtime };
 use uuid::Uuid;
-const RESORUCE_FOLDER: &'static str = "resources";
+const RESOURCE_FOLDER: &'static str = "resources";
 
 fn progress_fn<R: Runtime>(progress: f32, tauri_window: &tauri::Window<R>) {
     let percent = (0.2 + (0.9 - 0.2) * progress) * 100.0; // map to [20%, 90%]
@@ -57,7 +57,7 @@ fn preview(payload: Payload, original: &str) -> String {
 async fn open_directory<R: Runtime>(app: tauri::AppHandle<R>) -> Result<(), String> {
     let env = app.env();
     if let Some(resource) = resource_dir(app.package_info(), &env) {
-        let resource = resource.join(RESORUCE_FOLDER);
+        let resource = resource.join(RESOURCE_FOLDER);
         let resource = resource.to_str().unwrap();
 
         let reporter: Option<&ProgressReporter<R>> = None;
@@ -66,7 +66,7 @@ async fn open_directory<R: Runtime>(app: tauri::AppHandle<R>) -> Result<(), Stri
        let _ =  match os {
             "windows" => run_command("explorer", reporter, &[resource])?,
             "macos" => run_command("open", reporter, &["-R", resource])?,
-            "linux" => run_command("open", reporter, &[resource])?,
+            "linux" => run_command("xdg-open", reporter, &[resource])?,
             _ => format!("unsupported operating system: {}", os),
         };
     }
@@ -158,7 +158,7 @@ fn setup_data(app: &mut tauri::App) -> Result<(), Box<dyn Error>> {
     // if let Some(data_dir) = data_dir() {
     let env = app.env();
     if let Some(resource) = resource_dir(app.package_info(), &env) {
-        let app_resource = resource.join(RESORUCE_FOLDER);
+        let app_resource = resource.join(RESOURCE_FOLDER);
         APP_DATA_DIR.set(app_resource.to_string_lossy().into_owned()).ok();
     }
     Ok(())
