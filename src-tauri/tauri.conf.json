@@ -7,7 +7,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["appimage", "dmg", "nsis"],
+    "targets": ["deb", "rpm", "dmg", "nsis"],
     "resources": [
       "resources/"
     ],

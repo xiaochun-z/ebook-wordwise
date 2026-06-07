@@ -112,3 +112,17 @@ jobs:
           prerelease: false
           includeUpdaterJson: false
           args: --target ${{matrix.target}}
+
+      - name: Create Windows Portable Zip
+        if: matrix.platform == 'windows-latest'
+        run: |
+          Compress-Archive -Path src-tauri/target/${{matrix.target}}/release/ebook-wordwise.exe -DestinationPath ebook-wordwise-${{ steps.get_version.outputs.version-without-v }}-${{ matrix.target }}-portable.zip
+
+      - name: Upload Windows Portable Zip
+        if: matrix.platform == 'windows-latest'
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          files: ebook-wordwise-${{ steps.get_version.outputs.version-without-v }}-${{ matrix.target }}-portable.zip
+          tag_name: v${{ steps.get_version.outputs.version-without-v }}
